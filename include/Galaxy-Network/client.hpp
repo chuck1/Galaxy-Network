@@ -11,12 +11,12 @@
 //typedef std::shared_ptr<boost::asio::io_service>	boost_io_service_ptr;
 
 namespace gal {
-	namespace network {
+	namespace net {
 		/// socket_client
-		class client: virtual public gal::network::communicating {
+		class client: virtual public gal::net::communicating {
 			public:
 				/// shared_ptr
-				typedef std::shared_ptr<client>	shared_t;
+				typedef sp::shared_ptr<client>	shared_t;
 
 				/// ctor
 				client(char const * address, unsigned short port);

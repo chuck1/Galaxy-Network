@@ -8,6 +8,8 @@
 
 gal::net::message::message() {
 }
+gal::net::message::~message() {
+}
 /*void gal::net::message::set(void const * const v, unsigned int len) {
 	//GALAXY_DEBUG_1_FUNCTION;
 	
@@ -37,10 +39,8 @@ void		gal::net::message::read(void * const v, size_t len) {
 }*/
 
 
-gal::net::omessage::omessage():
-	ar_(ss_)
-{
-}
+
+
 
 
 

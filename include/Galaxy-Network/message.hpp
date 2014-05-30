@@ -12,8 +12,18 @@
 #if defined GALNET_USE_BOOST
 #include <boost/archive/polymorphic_binary_oarchive.hpp>
 #include <boost/archive/polymorphic_binary_iarchive.hpp>
+
+typedef boost::archive::polymorphic_binary_oarchive oarchive;
+typedef boost::archive::polymorphic_binary_iarchive iarchive;
+
+
 #else
-#error
+
+#include <Galaxy-Network/archive.hpp>
+
+typedef gal::net::oarchive oarchive;
+typedef gal::net::iarchive iarchive;
+
 #endif
 
 //namespace sp = std;
@@ -54,13 +64,15 @@ namespace gal {
 		};
 		class omessage: public message {
 			public:
-				omessage();
-				boost::archive::polymorphic_binary_oarchive		ar_;
+				omessage(): ar_(ss_) {}
+				~omessage() {}
+				oarchive			ar_;
 		};
 		class imessage: public message {
 			public:
-				imessage();
-				boost::archive::polymorphic_binary_iarchive		ar_;
+				imessage(): ar_(ss_) {}
+				~imessage() {}
+				iarchive			ar_;
 		};
 	}
 }

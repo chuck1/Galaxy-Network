@@ -16,71 +16,62 @@
 
 gal::net::communicating::communicating( int socket ):
 	socket_(socket),
-	read_msg_(new gal::net::imessage),
-	terminate_(false)
+	read_msg_(new gal::net::imessage)
 {
 	//GALAXY_DEBUG_0_FUNCTION;
-	
+
 	printf("socket = %i\n", socket);
 }
-void	gal::net::communicating::start()
-{
-	//GALAXY_DEBUG_0_FUNCTION;
-	//printf("lock mutex_start_\n");
+void	gal::net::communicating::start() {
 
 	std::unique_lock<std::mutex> lk(mutex_start_);
-	
+
 	write_thread_ = std::thread(std::bind(&communicating::thread_write_dispatch, this ) );
-	
-	//printf("wait for cv_ready_\n");
+
 	cv_ready_.wait(lk);
-	
-	//printf("cv_ready_ notified\n");
-	
+
 	read_thread_ = std::thread(std::bind(&communicating::thread_read, this ) );
 }
 void		gal::net::communicating::write(sp::shared_ptr<gal::net::omessage> msg) {	
-	//GALAXY_DEBUG_1_FUNCTION;
-	
+
 	{
 		std::lock_guard<std::mutex> lk(mutex_);
-		
+
 		// take ownership of the message
-		write_queue_.push_back( std::move(msg) );
+		write_queue_.push_back(std::move(msg));
 	}
-	
-	//printf("notify one\n");
-	
+
 	cv_.notify_one();
 }
 void	gal::net::communicating::close() {	
-	//GALAXY_DEBUG_0_FUNCTION;
-	
-	{
-		std::lock_guard<std::mutex> lk( mutex_ );
 
-		terminate_ = true;
-	}
-	cv_.notify_all();
+	notify_bits(TERMINATE);
 
 	write_thread_.join();
 	read_thread_.join();
 
-	::close( socket_ );
+	::close(socket_);
+}
+void		gal::net::communicating::notify_bits(unsigned int bits) {
+	{
+		std::lock_guard<std::mutex> lk(mutex_);
+		bits_ |= bits;
+	}
+	cv_.notify_all();
 }
 void	gal::net::communicating::thread_write_dispatch() {
 	//GALAXY_DEBUG_1_FUNCTION;
-	
+
 	//printf("lock mutex_start_\n");
 
 	mutex_start_.lock();
 
 	//printf("unlock mutex_start_\n");
 	mutex_start_.unlock();
-	
+
 	//printf("lock mutex_\n");
 	std::unique_lock<std::mutex> lk(mutex_);
-	
+
 	//printf("cv_ready_.notify_all()\n");
 	cv_ready_.notify_all();
 
@@ -88,19 +79,17 @@ void	gal::net::communicating::thread_write_dispatch() {
 	{
 		//printf("wait\n");
 
-		do
-		{
+		do {
 			cv_.wait(lk);
-		}
-		while ( write_queue_.empty() && !terminate_ );
+		} while(write_queue_.empty() && !(bits_ & TERMINATE));
+
 
 		//printf("notified\n");
 
 		//cv_.wait( lk, [&] { return ( !write_queue_.empty() || terminate_ ); } );
 
-		if ( terminate_ )
-		{
-			printf("terminated\n");
+		if(bits_ & TERMINATE) {
+			//printf("terminated\n");
 			return;
 		}		
 
@@ -119,25 +108,39 @@ void	gal::net::communicating::thread_write_dispatch() {
 	}
 }
 void		gal::net::communicating::thread_write(sp::shared_ptr<gal::net::omessage> message) {
-	//GALAXY_DEBUG_1_FUNCTION;
-
 
 	std::string str(message->ss_.str());
 
 	printf("DEBUG: sending message of length %i\n", (int)str.size());
-
-	int result = ::send(socket_, str.c_str(), str.size(), 0 );
+	
+	header_type header = str.size();
+	
+	int result = ::send(socket_, &header, sizeof(header_type), 0);
 
 	if ( result < 0 ) {
 		perror("send:");
-		exit(0);
-		/// \todo pass exception to main thread ( or whoever )
+		notify_bits(TERMINATE & ERROR);
+		return;
 	}
 
-	if ( result < (int)str.size() ) {
-		// ???
+	if(result < (int)sizeof(header_type)) {
 		printf("unknown error\n");
-		exit(0);
+		notify_bits(TERMINATE & ERROR);
+		return;
+	}
+
+	result = ::send(socket_, str.c_str(), str.size(), 0);
+
+	if(result < 0) {
+		perror("send:");
+		notify_bits(TERMINATE & ERROR);
+		return;
+	}
+
+	if(result < (int)str.size()) {
+		printf("unknown error\n");
+		notify_bits(TERMINATE & ERROR);
+		return;
 	}
 }
 void	gal::net::communicating::thread_read() {
@@ -146,17 +149,14 @@ void	gal::net::communicating::thread_read() {
 	while (1) {
 		{
 			std::lock_guard<std::mutex> lk( mutex_ );
-
-			if ( terminate_ )
-			{
-				return;
-			}
+			if(bits_ & TERMINATE) return;
 		}
 
 		try {
 			thread_read_header();
 		} catch(...) {
-			/// \todo pass exception to main thread ( or whoever )
+			notify_bits(TERMINATE & ERROR);
+			return;
 		}
 	}
 }
@@ -173,18 +173,18 @@ void	gal::net::communicating::thread_read_header() {
 
 	if (bytes < 0) {
 		perror("recv:");
-		exit(0);
+		throw 0;
 	}
 
 	if (bytes == 0) {
 		printf("connection is closed\n");
-		exit(0);
+		throw 0;
 	}
 
 	if (bytes < (int)sizeof(header_type)) {
 		printf("%s\n", __PRETTY_FUNCTION__);
 		printf("not enough data\n");
-		exit(0);
+		throw 0;
 	}
 
 	handle_do_read_header();
@@ -198,18 +198,18 @@ void	gal::net::communicating::thread_read_body() {
 	if(bytes < 0)
 	{
 		perror("recv:");
-		exit(0);
+		throw 0;
 	}
 
 
 	if(bytes == 0) {
 		printf("connection is closed\n");
-		exit(0);
+		throw 0;
 	}
 
 	if(bytes < (int)sizeof(header_type)) {
 		printf("not enough data\n");
-		exit(0);
+		throw 0;
 	}
 
 	printf("DEBUG: received %i bytes\n", read_header_);
@@ -222,11 +222,16 @@ void	gal::net::communicating::handle_do_read_header() {
 	//GALAXY_DEBUG_1_FUNCTION;
 
 	if (read_msg_) {
-		thread_read_body();
+		try {
+			thread_read_body();
+		} catch(...) {
+			notify_bits(TERMINATE & ERROR);
+			return;
+		}
 	} else {
 		printf("header decode failed\n");
-
-		std::thread(&gal::net::communicating::close, this).detach();
+		notify_bits(TERMINATE & ERROR);
+		return;
 	}
 }
 void	gal::net::communicating::handle_do_read_body() {
@@ -241,8 +246,12 @@ void	gal::net::communicating::handle_do_read_body() {
 	read_msg_->ss_.write(read_buffer_, read_header_);
 
 	process(read_msg_);
-
-	thread_read_header();
+	try {
+		thread_read_header();
+	} catch(...) {
+		notify_bits(TERMINATE & ERROR);
+		return;
+	}
 }
 
 

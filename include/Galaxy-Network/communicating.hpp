@@ -11,57 +11,76 @@
 #include <sys/socket.h>
 
 #include <Galaxy-Network/Types.hpp>
+#include <Galaxy-Network/basic.hpp>
 #include <Galaxy-Network/message.hpp>
 
 namespace gal {
 	namespace net {
 		/** %socket %communicating
 		 */
-		class communicating {
+		class communicating: public gal::net::__basic {
 			public:
 				typedef int				header_type;
 				enum { MAX_MESSAGE_LENGTH = 10000 };
 			public:
-				/** ctor
+				/** @brief ctor
+				 *
+				 * @param socket socket
 				 */
 				communicating(int socket);
-				/** write
+				/** @brief write
+				 *
+				 * send %message to socket
+				 * @param %message %message to send
 				 */
-				void					write(sp::shared_ptr<omessage>);
-				/** close
+				void					write(sp::shared_ptr<omessage> message);
+				/** @brief close
+				 *
+				 * close the socket and terminate threads
 				 */
 				void					close();
-				//	protected:
-				/** thread write
-				 */
+				/** @brief thread write
+				 *
+				 * launch the read and write threads
+				*/			
 				void					start();
+			private:
+				communicating(communicating const &) = default;
+				communicating(communicating &&) = default;
+				communicating&				operator=(communicating const &) = default;
+				communicating&				operator=(communicating &&) = default;
+			protected:
 				virtual void				process(sp::shared_ptr<gal::net::imessage>) = 0;
+			private:
+				/** thread write
+				*/
 				void					thread_write(sp::shared_ptr<gal::net::omessage>);
-				/** thread write dispath
-				 */
+				/** @brief thread write dispath
+				*/
 				void					thread_write_dispatch();
-				/** thread read
-				 */
+				/** @brief thread read
+				*/
 				void					thread_read();
-				/** thread read header
-				 */
+				/** @brief thread read header
+				*/
 				void					thread_read_header();
-				/** thread read body
-				 */
+				/** @brief thread read body
+				*/
 				void					thread_read_body();
-				/** handle read header
-				 */
+				/** @brief handle read header
+				*/
 				void					handle_do_read_header();
-				/** handle read body
-				 */
+				/** @brief handle read body
+				*/
 				void					handle_do_read_body();
-				/** handle write
-				 */
+				/** @brief handle write
+				*/
 				void					handle_do_write();
-				//	protected:
+			private:
+				void					notify_bits(unsigned int bits);
 			protected:			
 				/** socket
-				 */
+				*/
 				int					socket_;
 			private:
 				/** @name Read Data Members @{ */
@@ -71,25 +90,19 @@ namespace gal {
 				/** @} */
 				header_type					write_header_;
 				/** message deque
-				 */
+				*/
 				std::deque< sp::shared_ptr<omessage> >		write_queue_;
 				/** process body
-				 */
-				bool						terminate_;
+				*/
 				/** thread write
-				 */
+				*/
 				std::thread					write_thread_;
 				/** thread read
-				 */
+				*/
 				std::thread					read_thread_;
 				/** condition variable
-				 */
-				std::condition_variable				cv_;
+				*/
 				std::condition_variable				cv_ready_;
-				/** mutex
-				 * mutex for write_queue_ and terminate_
-				 */
-				std::mutex					mutex_;
 				std::mutex					mutex_start_;
 		};
 	}

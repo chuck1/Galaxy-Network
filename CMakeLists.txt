@@ -8,7 +8,9 @@ INCLUDE("${CMakeHelper_INCLUDE_DIR}/CMakeHelper/static/library.cmake")
 
 cmh_static_library()
 
-ADD_DEFINITIONS("-DGALNET_USE_BOOST")
+#ADD_DEFINITIONS("-DGALNET_USE_BOOST")
 
 MESSAGE(STATUS "cxx flags: ${CMAKE_CXX_FLAGS}")
+
+ADD_SUBDIRECTORY(test)
 

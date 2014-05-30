@@ -36,7 +36,7 @@ void fillAddr(char const * address, unsigned short port, sockaddr_in &addr)
 	addr.sin_port = htons(port);     // Assign port in network byte order
 }
 
-gal::network::client::client(char const * foreign_address, unsigned short foreign_port):
+gal::net::client::client(char const * foreign_address, unsigned short foreign_port):
 	communicating(::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)),
 	foreign_address_(foreign_address),
 	foreign_port_(foreign_port)
