@@ -16,8 +16,12 @@
 #include <unistd.h>          // For close()
 #include <netinet/in.h>      // For sockaddr_in
 
+#include <boost/asio.hpp>
+
 #include <Galaxy-Network/basic.hpp>
 #include <Galaxy-Network/communicating.hpp>
+
+namespace ip = boost::asio::ip;
 
 namespace gal {
 	namespace net {
@@ -26,19 +30,23 @@ namespace gal {
 				typedef std::shared_ptr<gal::net::communicating>	comm_type;
 				typedef std::shared_ptr<gal::net::message>		msg_type;
 			public:
-				server(unsigned short localPort, int queueLen);
+				server(
+						boost::asio::io_service& io_service,
+						const ip::tcp::endpoint& endpoint);
+				
+				
 				virtual ~server();
-				virtual void				callback_accept(int) = 0;
+				virtual void				callback_accept(ip::tcp::socket&& socket) = 0;
 				void					write(sp::shared_ptr<omessage>);
 				void					close();
 			private:
-				void					thread_accept();
+				void					do_accept();
+				void					thread_accept(boost::system::error_code);
+			protected:
+				boost::asio::io_service&		io_service_;
 			private:
-				int					socket_;
-				
-				std::thread				thread_accept_;
-
-				unsigned short				local_port_;
+				ip::tcp::acceptor			acceptor_;
+				ip::tcp::socket				socket_;
 		};
 	}
 }

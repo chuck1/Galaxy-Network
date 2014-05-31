@@ -13,75 +13,47 @@
 #include <unistd.h>          // For close()
 #include <netinet/in.h>      // For sockaddr_in
 
+#include <boost/bind.hpp>
 
 //#include <galaxy/config.hpp>
 #include <Galaxy-Network/server.hpp>
 
 
-gal::net::server::server(unsigned short localPort, int queueLen):
-	socket_(::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)),
-	thread_accept_(std::bind(&server::thread_accept, this)),
-	local_port_(localPort)
+gal::net::server::server(
+		boost::asio::io_service& io_service,
+		const ip::tcp::endpoint& endpoint):
+	io_service_(io_service),
+	acceptor_(io_service, endpoint),
+	socket_(io_service)
 {
-	//GALAXY_DEBUG_0_FUNCTION;
+	do_accept();
+}
+void		gal::net::server::do_accept() {
 
+	acceptor_.async_accept(
+			socket_,
+			boost::bind(
+				&gal::net::server::thread_accept,
+				this,
+				_1
+				)
+			);
 
 }
 gal::net::server::~server() {
-	notify_bits(TERMINATE);
-
-	if(thread_accept_.joinable())
-		thread_accept_.join();
+	acceptor_.cancel();
 }
 void gal::net::server::close() {
-	notify_bits(TERMINATE);
-
-	if(thread_accept_.joinable())
-		thread_accept_.join();
+	acceptor_.cancel();
 }
-void		gal::net::server::thread_accept() {
+void		gal::net::server::thread_accept(boost::system::error_code ec) {
 	//GALAXY_DEBUG_0_FUNCTION;
 
-	sockaddr_in addr;
-
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = INADDR_ANY;
-	addr.sin_port = htons(local_port_);
-
-
-	int c = bind (socket_, (struct sockaddr *)&addr, sizeof(addr));
-	if(c < 0)
-	{
-		perror("bind:");  
+	if(!ec) {	
+		std::cout << "accepted" << std::endl;
+		callback_accept(std::move(socket_));
 	}
-
-	listen(socket_,5);
-
-	socklen_t len = sizeof(addr);
-	
-	while(1)
-	{
-		int s = ::accept(socket_, (struct sockaddr *)&addr, &len);
-		if(s < 0) {
-			perror("accept:");
-			notify_bits(TERMINATE);
-			return;
-		}
-
-
-		{
-			//std::lock_guard<std::mutex> lk(mutex_);
-
-			callback_accept(s);
-		}
-	}
+	do_accept();
 }
-/*void		gal::net::server::write(sp::shared_ptr<gal::net::omessage> msg) {
-
-  for(auto it = clients_.begin(); it != clients_.end(); ++it) {
-  (*it)->write(msg);
-  }
-
-  }*/
 
 

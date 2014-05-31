@@ -13,6 +13,10 @@ namespace gal {
 			public:
 				oarchive(std::stringstream& ss): ss_(ss) {
 				}
+				oarchive&		operator<<(std::string str) {
+					ss_ << str;
+					return *this;
+				}
 				std::stringstream&	ss_;
 		};
 	}

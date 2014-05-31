@@ -36,38 +36,24 @@ void fillAddr(char const * address, unsigned short port, sockaddr_in &addr)
 	addr.sin_port = htons(port);     // Assign port in network byte order
 }
 
-gal::net::client::client(char const * foreign_address, unsigned short foreign_port):
-	communicating(::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)),
-	foreign_address_(foreign_address),
-	foreign_port_(foreign_port)
+gal::net::client::client(
+		boost::asio::io_service& io_service,
+		ip::tcp::resolver::iterator endpoint_iterator):
+	gal::net::communicating(io_service),
+	io_service_(io_service)
 {
 	//GALAXY_DEBUG_0_FUNCTION;
-	
-	sockaddr_in destAddr;
+	do_connect(endpoint_iterator);
+}
+void		gal::net::client::do_connect(ip::tcp::resolver::iterator endpoint_iterator) {
 
-	fillAddr(foreign_address_, foreign_port_, destAddr);
-
-	int c = ::connect(socket_, (sockaddr *) &destAddr, sizeof(destAddr));
-	if(c < 0)
-	{
-		printf("connect: %s\n", strerror(errno));
-		exit(0);
-	}
-	
-	printf("connected\n");
-	
-	//start();
-	
-	//do_connect(endpoint_iterator);
-/*	
-	gal::asio::message::shared_t msg(new gal::asio::message);
-	memcpy(msg->body(), "hello", 5);
-	msg->body_length(5);
-	msg->encode_header();
-	
-	write(msg);
-*/
-
+	boost::asio::async_connect(socket_, endpoint_iterator,
+			[this](boost::system::error_code ec, ip::tcp::resolver::iterator) {
+			if (!ec) {
+			do_read_header();
+			std::cout << "connected" << std::endl;
+			}
+			});
 
 }
 

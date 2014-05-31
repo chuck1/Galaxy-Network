@@ -6,6 +6,8 @@
 #include <iostream>
 #include <thread>
 
+#include <boost/asio.hpp>
+
 #include <Galaxy-Network/communicating.hpp>
 
 //typedef std::shared_ptr<boost::asio::io_service>	boost_io_service_ptr;
@@ -19,7 +21,10 @@ namespace gal {
 				typedef sp::shared_ptr<client>	shared_t;
 
 				/// ctor
-				client(char const * address, unsigned short port);
+				client(
+						boost::asio::io_service& io_service,
+						ip::tcp::resolver::iterator endpoint_iterator);
+
 
 				/// write
 				//void	write(gal::asio::message::shared_t msg);
@@ -28,12 +33,11 @@ namespace gal {
 
 			private:
 				/// do_connect
-				//void	do_connect();
+				void	do_connect(ip::tcp::resolver::iterator endpoint_iterator);
 				/// handle_do_connect
 				//void	handle_do_connect();
 
-				char const *	foreign_address_;
-				unsigned short	foreign_port_;
+				boost::asio::io_service& io_service_;
 		};
 	}
 }

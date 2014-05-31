@@ -10,6 +10,10 @@
 
 #include <sys/socket.h>
 
+#include <boost/asio.hpp>
+
+namespace ip = boost::asio::ip;
+
 #include <Galaxy-Network/Types.hpp>
 #include <Galaxy-Network/basic.hpp>
 #include <Galaxy-Network/message.hpp>
@@ -18,7 +22,7 @@ namespace gal {
 	namespace net {
 		/** %socket %communicating
 		 */
-		class communicating: public gal::net::__basic {
+		class communicating: public gal::net::__basic, public std::enable_shared_from_this<communicating> {
 			public:
 				typedef int				header_type;
 				enum { MAX_MESSAGE_LENGTH = 10000 };
@@ -27,7 +31,12 @@ namespace gal {
 				 *
 				 * @param socket socket
 				 */
-				communicating(int socket);
+				communicating(boost::asio::io_service& io_service, ip::tcp::socket&& socket);
+				/** @brief ctor
+				 *
+				 * @param io_serive io_service
+				 */
+				communicating(boost::asio::io_service& io_service);
 				/** @brief write
 				 *
 				 * send %message to socket
@@ -39,49 +48,43 @@ namespace gal {
 				 * close the socket and terminate threads
 				 */
 				void					close();
-				/** @brief thread write
-				 *
-				 * launch the read and write threads
-				*/			
-				void					start();
 			private:
 				communicating(communicating const &) = default;
 				communicating(communicating &&) = default;
 				communicating&				operator=(communicating const &) = default;
 				communicating&				operator=(communicating &&) = default;
-			protected:
+
 				virtual void				process(sp::shared_ptr<gal::net::imessage>) = 0;
+			public:
+				void					do_read_header();
 			private:
+				void					do_write();
+				void					thread_write(sp::shared_ptr<gal::net::omessage> msg);
+				void					thread_do_write_header(boost::system::error_code ec, std::size_t length, sp::shared_ptr<gal::net::omessage> msg);
+				void					thread_do_write_body(boost::system::error_code ec, std::size_t length);
+
 				/** thread write
 				*/
-				void					thread_write(sp::shared_ptr<gal::net::omessage>);
-				/** @brief thread write dispath
-				*/
-				void					thread_write_dispatch();
+				void					thread_write_body(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage>);
+				
 				/** @brief thread read
 				*/
 				void					thread_read();
 				/** @brief thread read header
 				*/
-				void					thread_read_header();
+				void					thread_read_header(boost::system::error_code ec, size_t length);
+				void					do_read_body();
 				/** @brief thread read body
 				*/
-				void					thread_read_body();
-				/** @brief handle read header
-				*/
-				void					handle_do_read_header();
-				/** @brief handle read body
-				*/
-				void					handle_do_read_body();
+				void					thread_read_body(boost::system::error_code ec, std::size_t);
 				/** @brief handle write
 				*/
 				void					handle_do_write();
 			private:
 				void					notify_bits(unsigned int bits);
-			protected:			
-				/** socket
-				*/
-				int					socket_;
+			protected:
+				ip::tcp::socket					socket_;
+				boost::asio::io_service&			io_service_;
 			private:
 				/** @name Read Data Members @{ */
 				sp::shared_ptr<gal::net::imessage>		read_msg_;
@@ -91,7 +94,7 @@ namespace gal {
 				header_type					write_header_;
 				/** message deque
 				*/
-				std::deque< sp::shared_ptr<omessage> >		write_queue_;
+				std::deque< sp::shared_ptr<omessage> >		write_msgs_;
 				/** process body
 				*/
 				/** thread write

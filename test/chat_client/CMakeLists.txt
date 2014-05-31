@@ -1,19 +1,19 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
-PROJECT(chat)
+PROJECT(chat_client)
 
-ADD_EXECUTABLE(chat main.cpp)
+ADD_EXECUTABLE(chat_client main.cpp)
 
 
 #ADD_DEFINITIONS("-DBOOST_ALL_DYN_LINK")
 #
-##SET(Boost_USE_STATIC_LIBS ON)
+SET(Boost_USE_STATIC_LIBS ON)
 #
-#SET(Boost_NO_SYSTEM_PATHS ON)
-#SET(BOOST_ROOT /scratch/usr)
+SET(Boost_NO_SYSTEM_PATHS ON)
+SET(BOOST_ROOT /scratch/usr)
 #
 #
-#FIND_PACKAGE(Boost 1.55 COMPONENTS serialization system thread REQUIRED)
+FIND_PACKAGE(Boost 1.55 COMPONENTS system thread REQUIRED)
 #
 #IF(Boost_FOUND)
 #ELSE()
@@ -23,7 +23,7 @@ ADD_EXECUTABLE(chat main.cpp)
 #
 #
 #MESSAGE(STATUS "boost: ${Boost_SERIALIZATION_LIBRARY}")
-#MESSAGE(STATUS "boost: ${Boost_SYSTEM_LIBRARY}")
+MESSAGE(STATUS "boost: ${Boost_SYSTEM_LIBRARY}")
 #MESSAGE(STATUS "boost: ${Boost_THREAD_LIBRARY}")
 #
 #
@@ -38,9 +38,10 @@ ADD_EXECUTABLE(chat main.cpp)
 #SET(libs ${libs} ${libs})
 
 SET(libs
+	${Boost_SYSTEM_LIBRARY}
 	pthread
 	rt
 	)
 
-TARGET_LINK_LIBRARIES(chat Galaxy-Network ${libs})
+TARGET_LINK_LIBRARIES(chat_client Galaxy-Network ${libs})
 
