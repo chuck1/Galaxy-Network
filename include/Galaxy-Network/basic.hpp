@@ -16,11 +16,11 @@ namespace gal {
 				};
 			protected:
 				__basic();
-				void					notify_bits(unsigned int bits);
+				void						notify_bits(unsigned int bits);
 
-				unsigned int				bits_;
-				std::condition_variable			cv_;
-				std::mutex				mutex_;
+				unsigned int					bits_;
+				::std::condition_variable			cv_;
+				::std::mutex					mutex_;
 		};
 	}
 }

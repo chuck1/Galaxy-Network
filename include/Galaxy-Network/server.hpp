@@ -27,8 +27,8 @@ namespace gal {
 	namespace net {
 		class server: public gal::net::__basic {
 			public:
-				typedef std::shared_ptr<gal::net::communicating>	comm_type;
-				typedef std::shared_ptr<gal::net::message>		msg_type;
+	//			typedef sp::shared_ptr<gal::net::communicating>	comm_type;
+//				typedef sp::shared_ptr<gal::net::message>		msg_type;
 			public:
 				server(
 						boost::asio::io_service& io_service,
