@@ -30,11 +30,13 @@ gal::net::server::server(
 }
 void		gal::net::server::do_accept() {
 
+	auto self(sp::dynamic_pointer_cast<gal::net::server>(shared_from_this()));
+
 	acceptor_.async_accept(
 			socket_,
 			boost::bind(
 				&gal::net::server::thread_accept,
-				this,
+				self,
 				_1
 				)
 			);
@@ -47,13 +49,18 @@ void gal::net::server::close() {
 	acceptor_.cancel();
 }
 void		gal::net::server::thread_accept(boost::system::error_code ec) {
-	//GALAXY_DEBUG_0_FUNCTION;
 
 	if(!ec) {	
-		std::cout << "accepted" << std::endl;
-		callback_accept(std::move(socket_));
+		::std::cout << "accepted" << ::std::endl;
+		callback_accept(::std::move(socket_));
 	}
 	do_accept();
 }
+void		gal::net::server::callback_accept(ip::tcp::socket&& socket) {
+	auto clie = sp::make_shared<T>(io_service_, ::std::move(socket));
+	clie->init();
+	clients_.insert(clie());
+}
+
 
 

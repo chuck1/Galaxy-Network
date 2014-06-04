@@ -14,15 +14,17 @@
 
 namespace ip = boost::asio::ip;
 
+#include <Galaxy-Standard/shared.hpp>
+
 #include <Galaxy-Network/Types.hpp>
 #include <Galaxy-Network/basic.hpp>
 #include <Galaxy-Network/message.hpp>
 
 namespace gal {
 	namespace net {
-		/** %socket %communicating
+		/** @brief %communicating
 		 */
-		class communicating: public gal::net::__basic, public std::enable_shared_from_this<communicating> {
+		class communicating: virtual public gal::std::shared {
 			public:
 				typedef int				header_type;
 				enum { MAX_MESSAGE_LENGTH = 10000 };
@@ -60,12 +62,12 @@ namespace gal {
 			private:
 				void					do_write();
 				void					thread_write(sp::shared_ptr<gal::net::omessage> msg);
-				void					thread_do_write_header(boost::system::error_code ec, std::size_t length, sp::shared_ptr<gal::net::omessage> msg);
-				void					thread_do_write_body(boost::system::error_code ec, std::size_t length);
+				void					thread_do_write_header(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage> msg);
+				void					thread_do_write_body(boost::system::error_code ec, size_t length);
 
 				/** thread write
 				*/
-				void					thread_write_body(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage>);
+				//void					thread_write_body(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage>);
 				
 				/** @brief thread read
 				*/
@@ -76,12 +78,10 @@ namespace gal {
 				void					do_read_body();
 				/** @brief thread read body
 				*/
-				void					thread_read_body(boost::system::error_code ec, std::size_t);
+				void					thread_read_body(boost::system::error_code ec, size_t);
 				/** @brief handle write
 				*/
 				void					handle_do_write();
-			private:
-				void					notify_bits(unsigned int bits);
 			protected:
 				ip::tcp::socket					socket_;
 				boost::asio::io_service&			io_service_;
@@ -94,19 +94,19 @@ namespace gal {
 				header_type					write_header_;
 				/** message deque
 				*/
-				std::deque< sp::shared_ptr<omessage> >		write_msgs_;
+				::std::deque< sp::shared_ptr<omessage> >		write_msgs_;
 				/** process body
 				*/
 				/** thread write
 				*/
-				std::thread					write_thread_;
+				::std::thread					write_thread_;
 				/** thread read
 				*/
-				std::thread					read_thread_;
+				::std::thread					read_thread_;
 				/** condition variable
 				*/
-				std::condition_variable				cv_ready_;
-				std::mutex					mutex_start_;
+				//std::condition_variable				cv_ready_;
+				//std::mutex					mutex_start_;
 		};
 	}
 }

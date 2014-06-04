@@ -51,7 +51,7 @@ void		gal::net::client::do_connect(ip::tcp::resolver::iterator endpoint_iterator
 			[this](boost::system::error_code ec, ip::tcp::resolver::iterator) {
 			if (!ec) {
 			do_read_header();
-			std::cout << "connected" << std::endl;
+			::std::cout << "connected" << ::std::endl;
 			}
 			});
 

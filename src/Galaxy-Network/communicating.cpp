@@ -16,10 +16,10 @@
 #include <Galaxy-Network/message.hpp>
 #include <Galaxy-Network/communicating.hpp>
 
-#define LOG std::cout << __PRETTY_FUNCTION__
+#define LOG ::std::cout << __PRETTY_FUNCTION__
 
 gal::net::communicating::communicating(boost::asio::io_service& io_service, ip::tcp::socket&& socket):
-	socket_(std::move(socket)),
+	socket_(::std::move(socket)),
 	io_service_(io_service),
 	read_msg_(new gal::net::imessage)
 {
@@ -34,7 +34,7 @@ gal::net::communicating::communicating(boost::asio::io_service& io_service):
 }
 void		gal::net::communicating::do_read_header() {
 
-	auto self(shared_from_this());
+	auto self(sp::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
 	boost::asio::async_read(socket_,
 			boost::asio::buffer(&read_header_, sizeof(header_type)),
@@ -44,9 +44,9 @@ void		gal::net::communicating::do_read_header() {
 }
 void		gal::net::communicating::write(sp::shared_ptr<gal::net::omessage> msg) {	
 
-	auto self(shared_from_this());
-	io_service_.post(boost::bind(&gal::net::communicating::thread_write, self, msg));
+	auto self(sp::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
+	io_service_.post(boost::bind(&gal::net::communicating::thread_write, self, msg));
 }
 void		gal::net::communicating::thread_write(sp::shared_ptr<gal::net::omessage> msg) {
 
@@ -63,13 +63,13 @@ void		gal::net::communicating::do_write() {
 	auto msg = write_msgs_.front();
 	write_msgs_.pop_front();
 
-	std::string str(msg->ss_.str());
+	::std::string str(msg->ss_.str());
 
 	//printf("DEBUG: sending message of length %i\n", (int)str.size());
 
 	header_type header = str.size();
 
-	auto self(shared_from_this());
+	auto self(sp::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
 	boost::asio::async_write(socket_,
 			boost::asio::buffer(&header, sizeof(header_type)),
@@ -81,11 +81,11 @@ void		gal::net::communicating::do_write() {
 				msg)
 			);
 }
-void		gal::net::communicating::thread_do_write_header(boost::system::error_code ec, std::size_t length, sp::shared_ptr<gal::net::omessage> msg) {
+void		gal::net::communicating::thread_do_write_header(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage> msg) {
 
-	std::string str(msg->ss_.str());
+	::std::string str(msg->ss_.str());
 
-	auto self(shared_from_this());
+	auto self(sp::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
 	boost::asio::async_write(socket_,
 			boost::asio::buffer(str.c_str(), str.size()),
@@ -96,13 +96,13 @@ void		gal::net::communicating::thread_do_write_header(boost::system::error_code 
 				_2)
 			);
 }
-void		gal::net::communicating::thread_do_write_body(boost::system::error_code ec, std::size_t length) {
+void		gal::net::communicating::thread_do_write_body(boost::system::error_code ec, size_t length) {
 	if (!ec) {
 		if (!write_msgs_.empty()) {
 			do_write();
 		}
 	} else {
-		LOG  << " error" << std::endl;
+		LOG  << " error" << ::std::endl;
 		socket_.close();
 	}
 }
@@ -111,14 +111,14 @@ void	gal::net::communicating::close() {
 	io_service_.post([this]() { socket_.close(); });
 
 }
-void		gal::net::communicating::notify_bits(unsigned int bits) {
+/*void		gal::net::communicating::notify_bits(unsigned int bits) {
 	{
 		std::lock_guard<std::mutex> lk(mutex_);
 		bits_ |= bits;
 	}
 	cv_.notify_all();
-}
-void		gal::net::communicating::thread_write_body(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage> message) {
+}*/
+/*void		gal::net::communicating::thread_write_body(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage> message) {
 
 	std::string str(message->ss_.str());
 
@@ -135,16 +135,16 @@ void		gal::net::communicating::thread_write_body(boost::system::error_code ec, s
 		notify_bits(TERMINATE & ERROR);
 		return;
 	}
-}
-void	gal::net::communicating::thread_read_header(boost::system::error_code ec, std::size_t length) {
+}*/
+void	gal::net::communicating::thread_read_header(boost::system::error_code ec, size_t length) {
 
 	if(ec) {
-		LOG << __PRETTY_FUNCTION__ << ": " << ec.message() << std::endl;
+		LOG << __PRETTY_FUNCTION__ << ": " << ec.message() << ::std::endl;
 		return;
 	}
 
 	if(length != sizeof(header_type)) {
-		LOG << __PRETTY_FUNCTION__ << ": unknwon error" << std::endl;
+		LOG << __PRETTY_FUNCTION__ << ": unknwon error" << ::std::endl;
 	}
 
 	do_read_body();
@@ -152,7 +152,7 @@ void	gal::net::communicating::thread_read_header(boost::system::error_code ec, s
 }
 void	gal::net::communicating::do_read_body() {
 
-	auto self(shared_from_this());
+	auto self(sp::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
 	boost::asio::async_read(socket_,
 			boost::asio::buffer(read_buffer_, read_header_),
@@ -160,7 +160,7 @@ void	gal::net::communicating::do_read_body() {
 			);
 
 }
-void	gal::net::communicating::thread_read_body(boost::system::error_code ec, std::size_t) {
+void	gal::net::communicating::thread_read_body(boost::system::error_code ec, size_t) {
 
 	if (!ec) {
 		// process message
@@ -172,7 +172,7 @@ void	gal::net::communicating::thread_read_body(boost::system::error_code ec, std
 		do_read_header();
 	} else {
 		// error
-		LOG << __PRETTY_FUNCTION__ << " error" << std::endl;
+		LOG << __PRETTY_FUNCTION__ << " error" << ::std::endl;
 		return;
 	}
 

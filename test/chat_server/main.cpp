@@ -17,8 +17,7 @@ class server: public gal::net::server {
 			: gal::net::server(io_service, endpoint) 
 		{
 		}
-		virtual void		callback_accept(ip::tcp::socket&& socket) {
-			auto clie = sp::make_shared<communicating>(io_service_, std::move(socket));
+		virtual void		accept(sp::make_shared<communicating> client) {
 			clie->do_read_header();
 			clients_.push_back(clie);
 		}

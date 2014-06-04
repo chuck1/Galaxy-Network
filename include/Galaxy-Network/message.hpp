@@ -60,7 +60,7 @@ namespace gal {
 				}*/
 				
 			public: //protected:
-				std::stringstream		ss_;
+				::std::stringstream		ss_;
 		};
 		class omessage: public message {
 			public:
