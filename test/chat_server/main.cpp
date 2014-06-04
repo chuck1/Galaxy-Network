@@ -2,65 +2,57 @@
 
 #include <Galaxy-Network/server.hpp>
 
-class communicating: public gal::net::communicating {
-	public:
-		communicating(boost::asio::io_service& io_service, ip::tcp::socket&& socket): gal::net::communicating(io_service, std::move(socket)) {}
-	
-		void		process(sp::shared_ptr<gal::net::imessage> message) {
-			std::cout << "client: " << message->ss_.str() << std::endl;
-		}
-};
+namespace chat {
+	class communicating: public gal::net::communicating {
+		public:
+			communicating(boost::asio::io_service& io_service, ip::tcp::socket&& socket): gal::net::communicating(io_service, std::move(socket)) {}
 
-class server: public gal::net::server {
-	public:
-		server(boost::asio::io_service& io_service, ip::tcp::endpoint const & endpoint)
-			: gal::net::server(io_service, endpoint) 
-		{
-		}
-		virtual void		accept(sp::make_shared<communicating> client) {
-			clie->do_read_header();
-			clients_.push_back(clie);
-		}
-	
-		void			send_all(sp::shared_ptr<gal::net::omessage> omessage) {
-			for(auto c : clients_) {
-				c->write(omessage);
+			void		process(sp::shared_ptr<gal::net::imessage> message) {
+				std::cout << "client: " << message->ss_.str() << std::endl;
 			}
-		}
-		std::vector< sp::shared_ptr< communicating > > clients_;
-};
-
-
-
-
+	};
+	class server: public gal::net::server<chat::communicating> {
+		public:
+			server(boost::asio::io_service& io_service, ip::tcp::endpoint const & endpoint)
+				: gal::net::server<chat::communicating>(io_service, endpoint) 
+			{
+			}
+			virtual void		accept(sp::shared_ptr<chat::communicating> client) {
+			}
+			
+	};
+}
 
 
 int main(int ac, char** av) {
-	
+
 	if(ac != 2) {
 		std::cout << "usage: " << av[0] << " <port>" << std::endl;
 		return 1;
 	}
 
 	boost::asio::io_service io_service;
-	
+
 	ip::tcp::endpoint endpoint(ip::tcp::v4(), std::atoi(av[1]));
-	
-	auto serv = std::make_shared<server>(io_service, endpoint);
-	
+
+	auto serv = std::make_shared<chat::server>(io_service, endpoint);
+	serv->do_accept();
+
 	std::thread t([&io_service](){ io_service.run(); });
 
 	std::string text;
 	while(1) {
 		std::cin >> text;
-
+		
+		std::cout << "sending '" << text << "'" << std::endl;
+		
 		auto message = std::make_shared<gal::net::omessage>();
-
+		
 		message->ar_ << text;
 
 		serv->send_all(message);
 	}
-	
+
 	io_service.run();
 }
 

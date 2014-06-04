@@ -43,5 +43,5 @@ SET(libs
 	rt
 	)
 
-TARGET_LINK_LIBRARIES(chat_client Galaxy-Network ${libs})
+TARGET_LINK_LIBRARIES(chat_client Galaxy-Network Galaxy-Standard ${libs})
 

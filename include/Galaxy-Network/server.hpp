@@ -27,31 +27,66 @@ namespace ip = boost::asio::ip;
 
 namespace gal {
 	namespace net {
-		class server: public gal::std::shared {
+		template<typename COMM> class server: public gal::std::shared {
 			public:
 				typedef sp::shared_ptr<gal::net::communicating>		comm_type;
 				typedef sp::shared_ptr<gal::net::message>		mesg_type;
 			public:
 				server(
 						boost::asio::io_service& io_service,
-						const ip::tcp::endpoint& endpoint);
-				
-				
-				virtual ~server();
-				virtual void					callback_accept(ip::tcp::socket&& socket);
-				virtual void					accept(sp::shared_ptr<gal::net::communicating>) = 0;
-				void						write(sp::shared_ptr<omessage>);
-				void						close();
-			private:
-				void						do_accept();
-				void						thread_accept(boost::system::error_code);
+						const ip::tcp::endpoint& endpoint):
+					io_service_(io_service),
+					acceptor_(io_service, endpoint),
+					socket_(io_service)
+			{
+				//do_accept();
+			}
+				virtual ~server() {
+					acceptor_.cancel();
+				}
+				void		do_accept() {
+
+					auto self(sp::dynamic_pointer_cast<gal::net::server<COMM>>(shared_from_this()));
+
+					acceptor_.async_accept(
+							socket_,
+							boost::bind(
+								&gal::net::server<COMM>::thread_accept,
+								self,
+								_1
+								)
+							);
+
+				}
+				void		close() {
+					acceptor_.cancel();
+				}
+				void		thread_accept(boost::system::error_code ec) {
+
+					if(!ec) {	
+						::std::cout << "accepted" << ::std::endl;
+						callback_accept(::std::move(socket_));
+					}
+					do_accept();
+				}
+				void		callback_accept(ip::tcp::socket&& socket) {
+					auto clie = sp::make_shared<COMM>(io_service_, ::std::move(socket));
+					clie->init();
+					clients_.insert(clie);
+				}
+				virtual void					accept(sp::shared_ptr<COMM>) = 0;
+				void						send_all(sp::shared_ptr<gal::net::omessage> omessage) {
+					for(auto c : clients_) {
+						c.ptr_->write(omessage);
+					}
+				}
 			protected:
 				boost::asio::io_service&			io_service_;
 			private:
 				ip::tcp::acceptor				acceptor_;
 				ip::tcp::socket					socket_;
 			private:
-				gal::std::map<gal::net::communicating>		clients_;
+				gal::std::map<COMM>				clients_;
 		};
 	}
 }

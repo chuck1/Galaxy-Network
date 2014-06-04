@@ -9,6 +9,8 @@ FIND_PACKAGE(CMakeHelper)
 
 INCLUDE("${CMakeHelper_INCLUDE_DIR}/CMakeHelper/static/library.cmake")
 
+INCLUDE_DIRECTORIES("../Galaxy-Standard/include")
+
 cmh_static_library()
 
 #ADD_DEFINITIONS("-DGALNET_USE_BOOST")
