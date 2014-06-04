@@ -7,6 +7,7 @@
 #include <iostream>
 #include <thread>
 #include <condition_variable>
+#include <memory>
 
 #include <sys/socket.h>
 
@@ -16,7 +17,7 @@ namespace ip = boost::asio::ip;
 
 #include <Galaxy-Standard/shared.hpp>
 
-#include <Galaxy-Network/Types.hpp>
+#include <Galaxy-Network/decl.hpp>
 #include <Galaxy-Network/basic.hpp>
 #include <Galaxy-Network/message.hpp>
 
@@ -62,41 +63,41 @@ namespace gal {
 			private:
 				void					do_write();
 				void					thread_write(sp::shared_ptr<gal::net::omessage> msg);
-				void					thread_do_write_header(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage> msg);
-				void					thread_do_write_body(boost::system::error_code ec, size_t length);
-
-				/** thread write
-				*/
-				//void					thread_write_body(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage>);
-				
+				void					thread_do_write_header(
+						boost::system::error_code ec,
+						size_t length,
+						sp::shared_ptr<gal::net::omessage> msg);
+				void					thread_do_write_body(
+						boost::system::error_code ec,
+						size_t length);
 				/** @brief thread read
-				*/
-				void					thread_read();
+				 */
+				void						thread_read();
 				/** @brief thread read header
-				*/
-				void					thread_read_header(boost::system::error_code ec, size_t length);
-				void					do_read_body();
+				 */
+				void						thread_read_header(boost::system::error_code ec, size_t length);
+				void						do_read_body();
 				/** @brief thread read body
-				*/
-				void					thread_read_body(boost::system::error_code ec, size_t);
+				 */
+				void						thread_read_body(boost::system::error_code ec, size_t);
 				/** @brief handle write
-				*/
-				void					handle_do_write();
+				 */
+				void						handle_do_write();
 			protected:
-				ip::tcp::socket					socket_;
-				boost::asio::io_service&			io_service_;
+				ip::tcp::socket						socket_;
+				boost::asio::io_service&				io_service_;
 			private:
 				/** @name Read Data Members @{ */
-				sp::shared_ptr<gal::net::imessage>		read_msg_;
-				header_type					read_header_;
-				char						read_buffer_[MAX_MESSAGE_LENGTH];
+				sp::shared_ptr< gal::net::imessage >			read_msg_;
+				header_type						read_header_;
+				char							read_buffer_[MAX_MESSAGE_LENGTH];
 				/** @} */
-				header_type					write_header_;
+				header_type						write_header_;
 				/** message deque
-				*/
-				::std::deque< sp::shared_ptr<omessage> >		write_msgs_;
+				 */
+				::std::deque< sp::shared_ptr< omessage > >		write_msgs_;
 				/** process body
-				*/
+				 */
 				/** thread write
 				*/
 				::std::thread					write_thread_;

@@ -9,13 +9,12 @@
 #include <memory>
 #include <deque>
 
-#if defined GALNET_USE_BOOST
+#if defined GAL_NET_USE_BOOST
 #include <boost/archive/polymorphic_binary_oarchive.hpp>
 #include <boost/archive/polymorphic_binary_iarchive.hpp>
 
 typedef boost::archive::polymorphic_binary_oarchive oarchive;
 typedef boost::archive::polymorphic_binary_iarchive iarchive;
-
 
 #else
 
@@ -29,7 +28,7 @@ typedef gal::net::iarchive iarchive;
 //namespace sp = std;
 
 #include <Galaxy-Network/config.hpp>
-#include <Galaxy-Network/Types.hpp>
+#include <Galaxy-Network/decl.hpp>
 
 namespace gal {
 	namespace net {

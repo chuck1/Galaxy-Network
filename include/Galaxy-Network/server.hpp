@@ -27,7 +27,7 @@ namespace ip = boost::asio::ip;
 
 namespace gal {
 	namespace net {
-		class server: public gal::net::__basic {
+		class server: public gal::std::shared {
 			public:
 				typedef sp::shared_ptr<gal::net::communicating>		comm_type;
 				typedef sp::shared_ptr<gal::net::message>		mesg_type;

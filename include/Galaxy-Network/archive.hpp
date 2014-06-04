@@ -9,17 +9,17 @@ namespace gal {
 			public:
 				iarchive(::std::stringstream& ss): ss_(ss) {
 				}
-				::std::stringstream&	ss_;
+				::std::stringstream &		ss_;
 		};
 		class oarchive {
 			public:
-				oarchive(::std::stringstream& ss): ss_(ss) {
+				oarchive(::std::stringstream & ss): ss_(ss) {
 				}
-				oarchive&		operator<<(::std::string str) {
+				oarchive&			operator<<(::std::string str) {
 					ss_ << str;
 					return *this;
 				}
-				::std::stringstream&	ss_;
+				::std::stringstream &		ss_;
 		};
 	}
 }
