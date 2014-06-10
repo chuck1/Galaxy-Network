@@ -2,7 +2,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
 INCLUDE("$ENV{HOME}/.config.cmake")
 
-
 PROJECT(Galaxy-Network)
 
 FIND_PACKAGE(CMakeHelper)
@@ -10,6 +9,7 @@ FIND_PACKAGE(CMakeHelper)
 INCLUDE("${CMakeHelper_INCLUDE_DIR}/CMakeHelper/static/library.cmake")
 
 INCLUDE_DIRECTORIES("../Galaxy-Standard/include")
+LINK_DIRECTORIES("../Galaxy-Standard/build")
 
 cmh_static_library()
 
