@@ -2,30 +2,36 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
 INCLUDE("$ENV{HOME}/.config.cmake")
 
-PROJECT(Galaxy-Network)
+PROJECT(galaxy_network)
 
-
-INCLUDE_DIRECTORIES("../Galaxy-Standard/include")
-LINK_DIRECTORIES("../Galaxy-Standard/Debug")
+SET(galaxy_network_STATIC TRUE)
+SET(galaxy_network_SHARED TRUE)
 
 
 FIND_PACKAGE(CMakeHelper)
 
-FIND_PACKAGE(Boost 1.55 COMPONENTS system thread REQUIRED)
+FIND_PACKAGE(Galaxy COMPONENTS
+	std
+	REQUIRED)
+
+FIND_PACKAGE(Boost 1.55 COMPONENTS
+	system
+	thread
+	REQUIRED)
 
 SET(libs
-	Galaxy-Network
-	Galaxy-Standard
-	${Boost_SYSTEM_LIBRARY}
+	${PROJECT_NAME}
+	${galaxy_LIBRARIES}
+	${Boost_LIBRARIES}
 	pthread
 	rt
 	)
 
 
+cmh_library()
 
-cmh_static_library()
+#MESSAGE(STATUS "galaxy_LIBRARIES ${galaxy_LIBRARIES}")
 
-MESSAGE(STATUS "cxx flags: ${CMAKE_CXX_FLAGS}")
-
+	
 ADD_SUBDIRECTORY(test)
 
