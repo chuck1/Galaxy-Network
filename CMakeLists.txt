@@ -21,7 +21,7 @@ FIND_PACKAGE(Boost 1.55 COMPONENTS
 
 SET(libs
 	${PROJECT_NAME}
-	${galaxy_LIBRARIES}
+	${Galaxy_LIBRARIES}
 	${Boost_LIBRARIES}
 	pthread
 	rt
