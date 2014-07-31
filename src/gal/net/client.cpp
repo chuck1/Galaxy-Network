@@ -11,7 +11,7 @@
 #include <unistd.h>          // For close()
 #include <netinet/in.h>      // For sockaddr_in
 
-#include <Galaxy-Network/client.hpp>
+#include <gal/net/client.hpp>
 
 //#include <galaxy/config.hpp>
 //#include <galaxy/free.hpp>

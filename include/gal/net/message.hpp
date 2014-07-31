@@ -18,7 +18,7 @@ typedef boost::archive::polymorphic_binary_iarchive iarchive;
 
 #else
 
-#include <Galaxy-Network/archive.hpp>
+#include <gal/net/archive.hpp>
 
 typedef gal::net::oarchive oarchive;
 typedef gal::net::iarchive iarchive;
@@ -27,8 +27,8 @@ typedef gal::net::iarchive iarchive;
 
 //namespace sp = std;
 
-#include <Galaxy-Network/config.hpp>
-#include <Galaxy-Network/decl.hpp>
+#include <gal/net/config.hpp>
+#include <gal/net/decl.hpp>
 
 namespace gal {
 	namespace net {

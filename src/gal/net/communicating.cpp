@@ -13,8 +13,8 @@
 
 #include <boost/bind.hpp>
 
-#include <Galaxy-Network/message.hpp>
-#include <Galaxy-Network/communicating.hpp>
+#include <gal/net/message.hpp>
+#include <gal/net/communicating.hpp>
 
 #define LOG ::std::cout << __PRETTY_FUNCTION__
 

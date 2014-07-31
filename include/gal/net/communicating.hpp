@@ -15,11 +15,11 @@
 
 namespace ip = boost::asio::ip;
 
-#include <Galaxy-Standard/shared.hpp>
+#include <gal/std/shared.hpp>
 
-#include <Galaxy-Network/decl.hpp>
-#include <Galaxy-Network/basic.hpp>
-#include <Galaxy-Network/message.hpp>
+#include <gal/net/decl.hpp>
+#include <gal/net/basic.hpp>
+#include <gal/net/message.hpp>
 
 namespace gal {
 	namespace net {

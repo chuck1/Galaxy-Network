@@ -20,8 +20,8 @@
 
 #include <Galaxy-Standard/map.hpp>
 
-#include <Galaxy-Network/basic.hpp>
-#include <Galaxy-Network/communicating.hpp>
+#include <gal/net/basic.hpp>
+#include <gal/net/communicating.hpp>
 
 namespace ip = boost::asio::ip;
 

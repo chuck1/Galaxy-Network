@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <Galaxy-Network/server.hpp>
+#include <gal/net/server.hpp>
 
 namespace chat {
 	class communicating: public gal::net::communicating {

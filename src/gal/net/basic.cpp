@@ -1,5 +1,5 @@
 
-#include <Galaxy-Network/basic.hpp>
+#include <gal/net/basic.hpp>
 /*
 gal::net::__basic::__basic():
 	bits_(0)

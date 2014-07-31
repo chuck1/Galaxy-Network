@@ -4,5 +4,4 @@ PROJECT(chat_server)
 
 link_exe()
 
-#TARGET_LINK_LIBRARIES(chat_server Galaxy-Network Galaxy-Standard ${libs})
 

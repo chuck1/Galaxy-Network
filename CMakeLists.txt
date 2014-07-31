@@ -30,7 +30,6 @@ SET(libs
 
 cmh_library()
 
-#MESSAGE(STATUS "galaxy_LIBRARIES ${galaxy_LIBRARIES}")
 
 	
 ADD_SUBDIRECTORY(test)

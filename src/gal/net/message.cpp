@@ -4,7 +4,7 @@
 #include <assert.h>
 
 //#include <galaxy/config.hpp>
-#include <Galaxy-Network/message.hpp>
+#include <gal/net/message.hpp>
 
 gal::net::message::message() {
 }

@@ -8,7 +8,7 @@
 
 #include <boost/asio.hpp>
 
-#include <Galaxy-Network/communicating.hpp>
+#include <gal/net/communicating.hpp>
 
 //typedef std::shared_ptr<boost::asio::io_service>	boost_io_service_ptr;
 
