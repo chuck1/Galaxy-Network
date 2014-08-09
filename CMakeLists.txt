@@ -7,7 +7,6 @@ PROJECT(galaxy_network)
 SET(galaxy_network_STATIC TRUE)
 SET(galaxy_network_SHARED TRUE)
 
-
 FIND_PACKAGE(CMakeHelper)
 
 FIND_PACKAGE(Galaxy COMPONENTS
@@ -27,10 +26,7 @@ SET(libs
 	rt
 	)
 
-
 cmh_library()
-
-
 	
 ADD_SUBDIRECTORY(test)
 
