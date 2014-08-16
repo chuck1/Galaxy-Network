@@ -15,7 +15,7 @@
 
 namespace ip = boost::asio::ip;
 
-#include <gal/std/shared.hpp>
+#include <gal/itf/shared.hpp>
 
 #include <gal/net/decl.hpp>
 #include <gal/net/basic.hpp>
@@ -25,7 +25,7 @@ namespace gal {
 	namespace net {
 		/** @brief %communicating
 		 */
-		class communicating: virtual public gal::std::shared {
+		class communicating: virtual public gal::itf::shared {
 			public:
 				typedef int				header_type;
 				enum { MAX_MESSAGE_LENGTH = 10000 };
@@ -45,7 +45,7 @@ namespace gal {
 				 * send %message to socket
 				 * @param %message %message to send
 				 */
-				void					write(sp::shared_ptr<omessage> message);
+				void					write(std::shared_ptr<omessage> message);
 				/** @brief close
 				 *
 				 * close the socket and terminate threads
@@ -57,16 +57,16 @@ namespace gal {
 				communicating&				operator=(communicating const &) = default;
 				communicating&				operator=(communicating &&) = default;
 
-				virtual void				process(sp::shared_ptr<gal::net::imessage>) = 0;
+				virtual void				process(std::shared_ptr<gal::net::imessage>) = 0;
 			public:
 				void					do_read_header();
 			private:
 				void					do_write();
-				void					thread_write(sp::shared_ptr<gal::net::omessage> msg);
+				void					thread_write(std::shared_ptr<gal::net::omessage> msg);
 				void					thread_do_write_header(
 						boost::system::error_code ec,
 						size_t length,
-						sp::shared_ptr<gal::net::omessage> msg);
+						std::shared_ptr<gal::net::omessage> msg);
 				void					thread_do_write_body(
 						boost::system::error_code ec,
 						size_t length);
@@ -88,14 +88,14 @@ namespace gal {
 				boost::asio::io_service&				io_service_;
 			private:
 				/** @name Read Data Members @{ */
-				sp::shared_ptr< gal::net::imessage >			read_msg_;
+				std::shared_ptr< gal::net::imessage >			read_msg_;
 				header_type						read_header_;
 				char							read_buffer_[MAX_MESSAGE_LENGTH];
 				/** @} */
 				header_type						write_header_;
 				/** message deque
 				 */
-				::std::deque< sp::shared_ptr< omessage > >		write_msgs_;
+				::std::deque< std::shared_ptr< omessage > >		write_msgs_;
 				/** process body
 				 */
 				/** thread write

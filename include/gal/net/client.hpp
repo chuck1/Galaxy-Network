@@ -17,8 +17,8 @@ namespace gal {
 		/// socket_client
 		class client: virtual public gal::net::communicating {
 			public:
-				/// shared_ptr
-				typedef sp::shared_ptr<client>	shared_t;
+				/// std::shared_ptr
+				typedef std::shared_ptr<client>	shared_t;
 
 				/// ctor
 				client(

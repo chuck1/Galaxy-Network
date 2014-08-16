@@ -7,7 +7,7 @@ namespace chat {
 		public:
 			communicating(boost::asio::io_service& io_service, ip::tcp::socket&& socket): gal::net::communicating(io_service, std::move(socket)) {}
 
-			void		process(sp::shared_ptr<gal::net::imessage> message) {
+			void		process(std::shared_ptr<gal::net::imessage> message) {
 				std::cout << "client: " << message->ss_.str() << std::endl;
 			}
 	};
@@ -17,7 +17,7 @@ namespace chat {
 				: gal::net::server<chat::communicating>(io_service, endpoint) 
 			{
 			}
-			virtual void		accept(sp::shared_ptr<chat::communicating> client) {
+			virtual void		accept(std::shared_ptr<chat::communicating> client) {
 			}
 			
 	};

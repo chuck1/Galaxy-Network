@@ -34,7 +34,7 @@ gal::net::communicating::communicating(boost::asio::io_service& io_service):
 }
 void		gal::net::communicating::do_read_header() {
 
-	auto self(sp::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
+	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
 	boost::asio::async_read(socket_,
 			boost::asio::buffer(&read_header_, sizeof(header_type)),
@@ -42,13 +42,13 @@ void		gal::net::communicating::do_read_header() {
 			);
 
 }
-void		gal::net::communicating::write(sp::shared_ptr<gal::net::omessage> msg) {	
+void		gal::net::communicating::write(std::shared_ptr<gal::net::omessage> msg) {	
 
-	auto self(sp::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
+	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
 	io_service_.post(boost::bind(&gal::net::communicating::thread_write, self, msg));
 }
-void		gal::net::communicating::thread_write(sp::shared_ptr<gal::net::omessage> msg) {
+void		gal::net::communicating::thread_write(std::shared_ptr<gal::net::omessage> msg) {
 
 	bool write_in_progress = !write_msgs_.empty();
 
@@ -69,7 +69,7 @@ void		gal::net::communicating::do_write() {
 
 	header_type header = str.size();
 
-	auto self(sp::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
+	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
 	boost::asio::async_write(socket_,
 			boost::asio::buffer(&header, sizeof(header_type)),
@@ -81,11 +81,11 @@ void		gal::net::communicating::do_write() {
 				msg)
 			);
 }
-void		gal::net::communicating::thread_do_write_header(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage> msg) {
+void		gal::net::communicating::thread_do_write_header(boost::system::error_code ec, size_t length, std::shared_ptr<gal::net::omessage> msg) {
 
 	::std::string str(msg->ss_.str());
 
-	auto self(sp::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
+	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
 	boost::asio::async_write(socket_,
 			boost::asio::buffer(str.c_str(), str.size()),
@@ -118,7 +118,7 @@ void	gal::net::communicating::close() {
 	}
 	cv_.notify_all();
 }*/
-/*void		gal::net::communicating::thread_write_body(boost::system::error_code ec, size_t length, sp::shared_ptr<gal::net::omessage> message) {
+/*void		gal::net::communicating::thread_write_body(boost::system::error_code ec, size_t length, std::shared_ptr<gal::net::omessage> message) {
 
 	std::string str(message->ss_.str());
 
@@ -152,7 +152,7 @@ void	gal::net::communicating::thread_read_header(boost::system::error_code ec, s
 }
 void	gal::net::communicating::do_read_body() {
 
-	auto self(sp::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
+	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
 	boost::asio::async_read(socket_,
 			boost::asio::buffer(read_buffer_, read_header_),

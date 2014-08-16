@@ -27,10 +27,10 @@ namespace ip = boost::asio::ip;
 
 namespace gal {
 	namespace net {
-		template<typename COMM> class server: public gal::std::shared {
+		template<typename COMM> class server: public gal::itf::shared {
 			public:
-				typedef sp::shared_ptr<gal::net::communicating>		comm_type;
-				typedef sp::shared_ptr<gal::net::message>		mesg_type;
+				typedef std::shared_ptr<gal::net::communicating>		comm_type;
+				typedef std::shared_ptr<gal::net::message>		mesg_type;
 			public:
 				server(
 						boost::asio::io_service& io_service,
@@ -46,7 +46,7 @@ namespace gal {
 				}
 				void		do_accept() {
 
-					auto self(sp::dynamic_pointer_cast<gal::net::server<COMM>>(shared_from_this()));
+					auto self(std::dynamic_pointer_cast<gal::net::server<COMM>>(shared_from_this()));
 
 					acceptor_.async_accept(
 							socket_,
@@ -74,8 +74,8 @@ namespace gal {
 					clie->init();
 					clients_.insert(clie);
 				}
-				virtual void					accept(sp::shared_ptr<COMM>) = 0;
-				void						send_all(sp::shared_ptr<gal::net::omessage> omessage) {
+				virtual void					accept(std::shared_ptr<COMM>) = 0;
+				void						send_all(std::shared_ptr<gal::net::omessage> omessage) {
 					for(auto c : clients_) {
 						c.ptr_->write(omessage);
 					}
@@ -86,7 +86,7 @@ namespace gal {
 				ip::tcp::acceptor				acceptor_;
 				ip::tcp::socket					socket_;
 			private:
-				gal::std::map<COMM>				clients_;
+				gal::stl::map<COMM>				clients_;
 		};
 	}
 }

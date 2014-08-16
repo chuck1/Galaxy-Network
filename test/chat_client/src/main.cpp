@@ -18,7 +18,7 @@ namespace chat {
 		{
 		}
 
-			void		process(sp::shared_ptr<gal::net::imessage> message) {
+			void		process(std::shared_ptr<gal::net::imessage> message) {
 				std::cout << "server: " << message->ss_.str() << std::endl;
 			}
 	};

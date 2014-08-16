@@ -33,7 +33,7 @@ typedef gal::net::iarchive iarchive;
 namespace gal {
 	namespace net {
 		/// message
-		class message: public sp::enable_shared_from_this<message> {
+		class message: public std::enable_shared_from_this<message> {
 			public:
 				friend class gal::net::communicating;
 			public:
