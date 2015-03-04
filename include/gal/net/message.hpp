@@ -9,13 +9,15 @@
 #include <memory>
 #include <deque>
 
-#if defined GAL_NET_USE_BOOST
+
+//#if defined GAL_NET_USE_BOOST
 #include <boost/archive/polymorphic_binary_oarchive.hpp>
 #include <boost/archive/polymorphic_binary_iarchive.hpp>
 
 typedef boost::archive::polymorphic_binary_oarchive oarchive;
 typedef boost::archive::polymorphic_binary_iarchive iarchive;
 
+/*
 #else
 
 #include <gal/net/archive.hpp>
@@ -24,7 +26,7 @@ typedef gal::net::oarchive oarchive;
 typedef gal::net::iarchive iarchive;
 
 #endif
-
+*/
 //namespace sp = std;
 
 #include <gal/net/config.hpp>

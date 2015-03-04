@@ -18,7 +18,7 @@
 
 #include <boost/asio.hpp>
 
-#include <Galaxy-Standard/map.hpp>
+#include <gal/stl/map.hpp>
 
 #include <gal/net/basic.hpp>
 #include <gal/net/communicating.hpp>
