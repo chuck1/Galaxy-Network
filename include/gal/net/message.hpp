@@ -32,63 +32,50 @@ typedef gal::net::iarchive iarchive;
 #include <gal/net/config.hpp>
 #include <gal/net/decl.hpp>
 
-namespace gal {
-	namespace net {
-		/// message
-		class message: public std::enable_shared_from_this<message> {
-			public:
-				friend class gal::net::communicating;
-			public:
-				/// ctor
-				message();
-				virtual ~message() = 0;
-				//void				set(void const * const, unsigned int);
-				void				reset_head();
-				/*void				write(void const * const, size_t);
-				template<typename T> void	write(const T& t) {
-					write(&t, sizeof(T));
-				}*/
+namespace gal { namespace net {
+	/// message
+	class message:
+		public std::enable_shared_from_this<message>
+	{
+		public:
+			friend class gal::net::communicating;
+			/// ctor
+			message();
+			virtual ~message() = 0;
+			//void				set(void const * const, unsigned int);
+			void				reset_head();
+			/*void				write(void const * const, size_t);
+			  template<typename T> void	write(const T& t) {
+			  write(&t, sizeof(T));
+			  }*/
 
-				/*template<class T> message&	operator<<(T t) {
-				  t.serialize(*this, 0);
-				  return *this;
-				  }*/
-
-
-				/*void				read(void * const, size_t);
-				template<typename T> void	read(T& t) {
-					read(&t, sizeof(T));
-				}*/
-				
-			public: //protected:
-				::std::stringstream		ss_;
-		};
-		class omessage: public message {
-			public:
-				omessage(): ar_(ss_) {}
-				~omessage() {}
-				oarchive			ar_;
-		};
-		class imessage: public message {
-			public:
-				imessage(): ar_(ss_) {}
-				~imessage() {}
-				iarchive			ar_;
-		};
-	}
-}
+			/*template<class T> message&	operator<<(T t) {
+			  t.serialize(*this, 0);
+			  return *this;
+			  }*/
 
 
+			/*void				read(void * const, size_t);
+			  template<typename T> void	read(T& t) {
+			  read(&t, sizeof(T));
+			  }*/
 
+		public: //protected:
+			::std::stringstream		ss_;
+	};
+	class omessage: public message {
+		public:
+			omessage(): ar_(ss_) {}
+			~omessage() {}
+			oarchive			ar_;
+	};
+	class imessage: public message {
+		public:
+			imessage(): ar_(ss_) {}
+			~imessage() {}
+			iarchive			ar_;
+	};
+}}
 
+#endif
 
-
-
-
-
-
-
-
-
-
-#endif // __JESS_ASIO_MESSAGE_HPP__
