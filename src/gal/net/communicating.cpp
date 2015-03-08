@@ -6,31 +6,31 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-//#include <math/free.hpp>
-
-//#include <galaxy/config.hpp>
-//#include <gal/free.hpp>
-
 #include <boost/bind.hpp>
 
 #include <gal/net/message.hpp>
+
 #include <gal/net/communicating.hpp>
 
-#define LOG ::std::cout << __PRETTY_FUNCTION__
+typedef gal::net::communicating THIS;
 
-gal::net::communicating::communicating(boost::asio::io_service& io_service, ip::tcp::socket&& socket):
-	socket_(::std::move(socket)),
-	io_service_(io_service),
-	read_msg_(new gal::net::imessage)
+void			THIS::connect(
+		S_IO io_service,
+		ip::tcp::socket&& socket)
 {
+	socket_ = std::move(socket);
 
+	io_service_ = io_service;
+
+	read_msg_.reset(new gal::net::imessage);
 }
-gal::net::communicating::communicating(boost::asio::io_service& io_service):
-	socket_(io_service),
-	io_service_(io_service),
-	read_msg_(new gal::net::imessage)
+void			THIS::connect(S_IO io_service)
 {
+	socket_ = ip::tcp::socket(*io_service);
 
+	io_service_ = io_service;
+
+	read_msg_.reset(new gal::net::imessage);
 }
 void		gal::net::communicating::do_read_header() {
 
@@ -46,7 +46,9 @@ void		gal::net::communicating::write(std::shared_ptr<gal::net::omessage> msg) {
 
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
-	io_service_.post(boost::bind(&gal::net::communicating::thread_write, self, msg));
+	auto io = io_service_.lock();
+	
+	io->post(boost::bind(&gal::net::communicating::thread_write, self, msg));
 }
 void		gal::net::communicating::thread_write(std::shared_ptr<gal::net::omessage> msg) {
 
@@ -63,7 +65,7 @@ void		gal::net::communicating::do_write() {
 	auto msg = write_msgs_.front();
 	write_msgs_.pop_front();
 
-	::std::string str(msg->ss_.str());
+	std::string str(msg->ss_.str());
 
 	//printf("DEBUG: sending message of length %i\n", (int)str.size());
 
@@ -102,14 +104,15 @@ void		gal::net::communicating::thread_do_write_body(boost::system::error_code ec
 			do_write();
 		}
 	} else {
-		LOG  << " error" << ::std::endl;
+		printf(/*ERRRO,*/ "socket error\n");
 		socket_.close();
 	}
 }
-void	gal::net::communicating::close() {	
-
-	io_service_.post([this]() { socket_.close(); });
-
+void	gal::net::communicating::close()
+{
+	auto io = io_service_.lock();
+	
+	io->post([this]() { socket_.close(); });
 }
 /*void		gal::net::communicating::notify_bits(unsigned int bits) {
 	{
@@ -139,16 +142,15 @@ void	gal::net::communicating::close() {
 void	gal::net::communicating::thread_read_header(boost::system::error_code ec, size_t length) {
 
 	if(ec) {
-		LOG << __PRETTY_FUNCTION__ << ": " << ec.message() << ::std::endl;
+		printf("%s : %s\n", __PRETTY_FUNCTION__, ec.message().c_str());
 		return;
 	}
 
 	if(length != sizeof(header_type)) {
-		LOG << __PRETTY_FUNCTION__ << ": unknwon error" << ::std::endl;
+		printf("%s : unknwon error\n", __PRETTY_FUNCTION__);
 	}
 
 	do_read_body();
-
 }
 void	gal::net::communicating::do_read_body() {
 
@@ -172,7 +174,7 @@ void	gal::net::communicating::thread_read_body(boost::system::error_code ec, siz
 		do_read_header();
 	} else {
 		// error
-		LOG << __PRETTY_FUNCTION__ << " error" << ::std::endl;
+		printf("%s: error\n", __PRETTY_FUNCTION__);
 		return;
 	}
 

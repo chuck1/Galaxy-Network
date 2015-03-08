@@ -36,13 +36,12 @@ void fillAddr(char const * address, unsigned short port, sockaddr_in &addr)
 	addr.sin_port = htons(port);     // Assign port in network byte order
 }
 
-gal::net::client::client(
-		boost::asio::io_service& io_service,
-		ip::tcp::resolver::iterator endpoint_iterator):
-	gal::net::communicating(io_service),
-	io_service_(io_service)
+typedef gal::net::client THIS;
+
+void			THIS::connect(
+		S_IO io_service,
+		ip::tcp::resolver::iterator endpoint_iterator)
 {
-	//GALAXY_DEBUG_0_FUNCTION;
 	do_connect(endpoint_iterator);
 }
 void		gal::net::client::do_connect(ip::tcp::resolver::iterator endpoint_iterator) {
