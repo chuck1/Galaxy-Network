@@ -2,23 +2,32 @@
 
 typedef gal::net::server THIS;
 
+THIS::server()
+{
+}
 void			THIS::connect(
 		S_IO io_service,
 		const ip::tcp::endpoint& endpoint)
 {
 	io_service_ = io_service;
-	acceptor_ = ip::tcp::acceptor(*io_service, endpoint);
+	acceptor_.reset(new ip::tcp::acceptor(*io_service, endpoint));
 	socket_.reset(new ip::tcp::socket(*io_service));
+	
+	do_accept();
 }
 THIS::~server()
 {
-	acceptor_.cancel();
+	acceptor_->cancel();
 }
 void			THIS::do_accept()
 {
 	auto self(std::dynamic_pointer_cast<THIS>(shared_from_this()));
 
-	acceptor_.async_accept(
+	auto ios = io_service_;//.lock();
+
+	if(!socket_) socket_.reset(new ip::tcp::socket(*ios));
+
+	acceptor_->async_accept(
 			*socket_,
 			boost::bind(
 				&THIS::thread_accept,
@@ -27,7 +36,7 @@ void			THIS::do_accept()
 }
 void			THIS::close()
 {
-	acceptor_.cancel();
+	acceptor_->cancel();
 }
 void			THIS::thread_accept(boost::system::error_code ec)
 {
