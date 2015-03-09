@@ -27,9 +27,7 @@ typedef gal::net::iarchive iarchive;
 
 #endif
 */
-//namespace sp = std;
 
-#include <gal/net/config.hpp>
 #include <gal/net/decl.hpp>
 
 namespace gal { namespace net {
@@ -41,7 +39,9 @@ namespace gal { namespace net {
 			friend class gal::net::communicating;
 			/// ctor
 			message();
-			virtual ~message() = 0;
+			virtual ~message();
+			void				init_input();
+			void				init_output();
 			//void				set(void const * const, unsigned int);
 			void				reset_head();
 			/*void				write(void const * const, size_t);
@@ -59,21 +59,12 @@ namespace gal { namespace net {
 			  template<typename T> void	read(T& t) {
 			  read(&t, sizeof(T));
 			  }*/
-
-		public: //protected:
-			::std::stringstream		ss_;
-	};
-	class omessage: public message {
-		public:
-			omessage(): ar_(ss_) {}
-			~omessage() {}
-			oarchive			ar_;
-	};
-	class imessage: public message {
-		public:
-			imessage(): ar_(ss_) {}
-			~imessage() {}
-			iarchive			ar_;
+			oarchive*			get_oar();
+			iarchive*			get_iar();
+		protected:
+			std::stringstream		ss_;
+			oarchive*			oar_;
+			iarchive*			iar_;
 	};
 }}
 

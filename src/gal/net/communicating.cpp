@@ -14,44 +14,55 @@
 
 typedef gal::net::communicating THIS;
 
+THIS::communicating()
+{
+}
+THIS::communicating(THIS && c):
+	socket_(std::move(c.socket_)),
+	io_service_(std::move(c.io_service_))
+{
+}
 void			THIS::connect(
 		S_IO io_service,
-		ip::tcp::socket&& socket)
+		S_SOC socket)
 {
 	socket_ = std::move(socket);
 
 	io_service_ = io_service;
 
-	read_msg_.reset(new gal::net::imessage);
+	read_msg_.reset(new gal::net::message);
+	read_msg_->init_input();
 }
 void			THIS::connect(S_IO io_service)
 {
-	socket_ = ip::tcp::socket(*io_service);
+	socket_.reset(new ip::tcp::socket(*io_service));
 
 	io_service_ = io_service;
 
-	read_msg_.reset(new gal::net::imessage);
+	read_msg_.reset(new gal::net::message);
+	read_msg_->init_input();
 }
 void		gal::net::communicating::do_read_header() {
 
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
-	boost::asio::async_read(socket_,
+	boost::asio::async_read(*socket_,
 			boost::asio::buffer(&read_header_, sizeof(header_type)),
 			boost::bind(&gal::net::communicating::thread_read_header, self, _1, _2)
 			);
 
 }
-void		gal::net::communicating::write(std::shared_ptr<gal::net::omessage> msg) {	
-
+void			gal::net::communicating::write(
+		S_MSG msg)
+{	
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
 	auto io = io_service_.lock();
 	
 	io->post(boost::bind(&gal::net::communicating::thread_write, self, msg));
 }
-void		gal::net::communicating::thread_write(std::shared_ptr<gal::net::omessage> msg) {
-
+void		gal::net::communicating::thread_write(S_MSG msg)
+{
 	bool write_in_progress = !write_msgs_.empty();
 
 	write_msgs_.push_back(msg);
@@ -73,7 +84,7 @@ void		gal::net::communicating::do_write() {
 
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
-	boost::asio::async_write(socket_,
+	boost::asio::async_write(*socket_,
 			boost::asio::buffer(&header, sizeof(header_type)),
 			boost::bind(
 				&gal::net::communicating::thread_do_write_header,
@@ -83,13 +94,16 @@ void		gal::net::communicating::do_write() {
 				msg)
 			);
 }
-void		gal::net::communicating::thread_do_write_header(boost::system::error_code ec, size_t length, std::shared_ptr<gal::net::omessage> msg) {
-
-	::std::string str(msg->ss_.str());
+void			gal::net::communicating::thread_do_write_header(
+		boost::system::error_code ec,
+		size_t length,
+		S_MSG msg)
+{
+	std::string str(msg->ss_.str());
 
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
-	boost::asio::async_write(socket_,
+	boost::asio::async_write(*socket_,
 			boost::asio::buffer(str.c_str(), str.size()),
 			boost::bind(
 				&gal::net::communicating::thread_do_write_body,
@@ -98,21 +112,28 @@ void		gal::net::communicating::thread_do_write_header(boost::system::error_code 
 				_2)
 			);
 }
-void		gal::net::communicating::thread_do_write_body(boost::system::error_code ec, size_t length) {
+void			gal::net::communicating::thread_do_write_body(
+		boost::system::error_code ec,
+		size_t length)
+{
 	if (!ec) {
 		if (!write_msgs_.empty()) {
 			do_write();
 		}
 	} else {
 		printf(/*ERRRO,*/ "socket error\n");
-		socket_.close();
+		socket_->close();
 	}
 }
 void	gal::net::communicating::close()
 {
 	auto io = io_service_.lock();
 	
-	io->post([this]() { socket_.close(); });
+	io->post([this]() { socket_->close(); });
+}
+void			THIS::release()
+{
+	close();
 }
 /*void		gal::net::communicating::notify_bits(unsigned int bits) {
 	{
@@ -152,24 +173,29 @@ void	gal::net::communicating::thread_read_header(boost::system::error_code ec, s
 
 	do_read_body();
 }
-void	gal::net::communicating::do_read_body() {
-
+void	gal::net::communicating::do_read_body()
+{
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
-	boost::asio::async_read(socket_,
+	boost::asio::async_read(*socket_,
 			boost::asio::buffer(read_buffer_, read_header_),
 			boost::bind(&gal::net::communicating::thread_read_body, self, _1, _2)
 			);
-
 }
-void	gal::net::communicating::thread_read_body(boost::system::error_code ec, size_t) {
+void			gal::net::communicating::thread_read_body(
+		boost::system::error_code ec,
+		size_t)
+{
 
 	if (!ec) {
 		// process message
 		read_msg_->reset_head();
 		read_msg_->ss_.write(read_buffer_, read_header_);
-		process(read_msg_);
 
+		// call pure virtual function to process data in message
+		if(!_M_process_func) abort();
+		_M_process_func(read_msg_);
+		
 		// restart read process
 		do_read_header();
 	} else {

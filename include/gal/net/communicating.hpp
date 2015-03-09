@@ -29,15 +29,18 @@ namespace gal { namespace net {
 			typedef int				header_type;
 			typedef std::shared_ptr<boost::asio::io_service>	S_IO;
 			typedef std::weak_ptr<boost::asio::io_service>		W_IO;
+			typedef std::shared_ptr<ip::tcp::socket>		S_SOC;
+			typedef std::shared_ptr<gal::net::message>		S_MSG;
 			enum { MAX_MESSAGE_LENGTH = 10000 };
 		public:
+			communicating();
 			/** @brief ctor
 			 *
 			 * @param socket socket
 			 */
 			void			connect(
 					S_IO io_service,
-					ip::tcp::socket&& socket);
+					S_SOC socket);
 			/** @brief ctor
 			 *
 			 * @param io_serive io_service
@@ -50,28 +53,36 @@ namespace gal { namespace net {
 			 * @param %message %message to send
 			 */
 			void			write(
-					std::shared_ptr<omessage> message);
+					std::shared_ptr<message> message);
 			/** @brief close
 			 *
 			 * close the socket and terminate threads
 			 */
 			void					close();
+			void					release();
 		private:
 			communicating(communicating const &) = default;
-			communicating(communicating &&) = default;
 			communicating&				operator=(communicating const &) = default;
 			communicating&				operator=(communicating &&) = default;
-
-			virtual void				process(std::shared_ptr<gal::net::imessage>) = 0;
+		protected:
+			communicating(communicating &&);
+			/*
+			 * user-supplied function to process incomming messages
+			 * 
+			 * using std::function instead of pure virtual function so that gal::net::server can instantiate instances of gal::net::communicating
+			 * without being a template class
+			 */
+			std::function<void(S_MSG)>		_M_process_func;
 		public:
 			void					do_read_header();
 		private:
 			void					do_write();
-			void					thread_write(std::shared_ptr<gal::net::omessage> msg);
+			void					thread_write(
+					std::shared_ptr<gal::net::message> msg);
 			void					thread_do_write_header(
 					boost::system::error_code ec,
 					size_t length,
-					std::shared_ptr<gal::net::omessage> msg);
+					std::shared_ptr<gal::net::message> msg);
 			void					thread_do_write_body(
 					boost::system::error_code ec,
 					size_t length);
@@ -89,29 +100,30 @@ namespace gal { namespace net {
 			*/
 			void						handle_do_write();
 		protected:
-			ip::tcp::socket					socket_;
+			S_SOC					socket_;
+		public:
 			W_IO						io_service_;
 		private:
 			/** @name Read Data Members @{ */
-			std::shared_ptr< gal::net::imessage >			read_msg_;
-			header_type						read_header_;
-			char							read_buffer_[MAX_MESSAGE_LENGTH];
+			S_MSG						read_msg_;
+			header_type					read_header_;
+			char						read_buffer_[MAX_MESSAGE_LENGTH];
 			/** @} */
-			header_type						write_header_;
+			header_type					write_header_;
 			/** message deque
 			*/
-			::std::deque< std::shared_ptr< omessage > >		write_msgs_;
+			std::deque<S_MSG>				write_msgs_;
 			/** process body
 			*/
 			/** thread write
 			*/
-			::std::thread					write_thread_;
+			std::thread					write_thread_;
 			/** thread read
 			*/
-			::std::thread					read_thread_;
+			std::thread					read_thread_;
 			/** condition variable
 			*/
-			//std::condition_variable				cv_ready_;
+			//std::condition_variable			cv_ready_;
 			//std::mutex					mutex_start_;
 	};
 }}

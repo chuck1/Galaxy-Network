@@ -44,9 +44,17 @@ void			THIS::connect(
 {
 	do_connect(endpoint_iterator);
 }
-void		gal::net::client::do_connect(ip::tcp::resolver::iterator endpoint_iterator) {
+void			THIS::do_connect(
+		ip::tcp::resolver::iterator endpoint_iterator)
+{
+	auto ios = io_service_.lock();
+	assert(ios);
 
-	boost::asio::async_connect(socket_, endpoint_iterator,
+	if(!socket_)
+		socket_.reset(new ip::tcp::socket(*ios));
+	assert(socket_);
+
+	boost::asio::async_connect(*socket_, endpoint_iterator,
 			[this](boost::system::error_code ec, ip::tcp::resolver::iterator) {
 			if (!ec) {
 			do_read_header();
