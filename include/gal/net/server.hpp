@@ -37,6 +37,7 @@ namespace gal { namespace net {
 			typedef std::shared_ptr<COM>				S_COM;
 			typedef std::shared_ptr<gal::net::message>		S_MSG;
 			typedef std::shared_ptr<boost::asio::io_service>	S_IO;
+			typedef std::weak_ptr<boost::asio::io_service>		W_IO;
 			typedef std::shared_ptr<ip::tcp::socket>		S_SOC;
 			typedef std::shared_ptr<ip::tcp::acceptor>		S_ACC;
 
@@ -53,8 +54,7 @@ namespace gal { namespace net {
 			void			send_all(S_MSG msg);
 			virtual void		accept(S_COM) = 0;
 		protected:
-			S_IO			io_service_;
-		private:
+			W_IO			io_service_;
 			S_ACC			acceptor_;
 			S_SOC			socket_;
 			//gal::stl::map<S_COM>				clients_;

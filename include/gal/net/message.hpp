@@ -14,8 +14,6 @@
 #include <boost/archive/polymorphic_binary_oarchive.hpp>
 #include <boost/archive/polymorphic_binary_iarchive.hpp>
 
-typedef boost::archive::polymorphic_binary_oarchive oarchive;
-typedef boost::archive::polymorphic_binary_iarchive iarchive;
 
 /*
 #else
@@ -37,6 +35,8 @@ namespace gal { namespace net {
 	{
 		public:
 			friend class gal::net::communicating;
+			typedef boost::archive::polymorphic_binary_oarchive oarchive;
+			typedef boost::archive::polymorphic_binary_iarchive iarchive;
 			/// ctor
 			message();
 			virtual ~message();

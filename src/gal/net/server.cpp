@@ -7,7 +7,7 @@ THIS::server()
 }
 void			THIS::connect(
 		S_IO ios,
-		const ip::tcp::endpoint& endpoint)
+		const ip::tcp::endpoint& ep)
 {
 	printv_func(DEBUG);
 
@@ -18,18 +18,19 @@ void			THIS::connect(
 	socket_.reset(new ip::tcp::socket(*ios));
 
 	// acceptor
-	printv(DEBUG, "create acceptor\n");
+	printv(DEBUG, "create acceptor %i\n", ep.port());
 
-
-	//acceptor_.reset(new ip::tcp::acceptor(*io_service, endpoint));
-	acceptor_.reset(new ip::tcp::acceptor(*ios));
+	if(0) {
+		acceptor_.reset(new ip::tcp::acceptor(*ios, ep.protocol()));
+		acceptor_->bind(ep);
+	} else if(1) {
+		acceptor_.reset(new ip::tcp::acceptor(*ios, ep, true));
+	}
+	//
 	
-	boost::asio::socket_base::reuse_address option(true);
+	//boost::asio::socket_base::reuse_address option(true);
 
-	acceptor_->set_option(option);
-
-	acceptor_->bind(endpoint);
-
+	//acceptor_->set_option(option);
 
 
 	printv(DEBUG, "do accept\n");
@@ -40,14 +41,22 @@ THIS::~server()
 	printv_func(DEBUG);
 
 	assert(!acceptor_);
+	assert(!socket_);
 }
 void			THIS::release()
 {
 	printv_func(DEBUG);
 
 	if(acceptor_) {
-		acceptor_->cancel();
+		//acceptor_->cancel();
+		//acceptor_->cancel();
+		printv(DEBUG, "delete acceptor\n");
 		acceptor_.reset();
+	}
+
+	if(socket_) {
+		printv(DEBUG, "delete socket\n");
+		socket_.reset();
 	}
 }
 void			THIS::do_accept()
@@ -56,7 +65,8 @@ void			THIS::do_accept()
 
 	auto self(std::dynamic_pointer_cast<THIS>(shared_from_this()));
 
-	auto ios = io_service_;//.lock();
+	auto ios = io_service_.lock();
+	assert(ios);
 
 	if(!socket_) socket_.reset(new ip::tcp::socket(*ios));
 
@@ -71,6 +81,7 @@ void			THIS::do_accept()
 				&THIS::thread_accept,
 				self,
 				_1));
+
 	printv(DEBUG, "done\n");
 }
 void			THIS::close()
@@ -87,19 +98,22 @@ void			THIS::thread_accept(boost::system::error_code ec)
 		std::cout << "accepted" << ::std::endl;
 		callback_accept(std::move(socket_));
 	} else {
-		printv(ERROR, "accept error\n");
+		printv(ERROR, "accept error: %s\n", ec.message().c_str());
 	}
 	do_accept();
 }
 void			THIS::callback_accept(S_SOC socket)
 {
 	printv_func(DEBUG);
-
+	
+	auto ios = io_service_.lock();
+	assert(ios);
+	
 	auto cp = new COM;
 
 	S_COM c(cp);
 
-	c->connect(io_service_, std::move(socket));
+	c->connect(ios, std::move(socket));
 
 	accept(c);
 
