@@ -1,3 +1,4 @@
+#include <gal/stl/deleter.hpp>
 #include <gal/net/server.hpp>
 
 typedef gal::net::server THIS;
@@ -111,11 +112,15 @@ void			THIS::callback_accept(S_SOC socket)
 	
 	auto cp = new COM;
 
-	S_COM c(cp);
+	S_COM c(cp, gal::stl::deleter<COM>());
+
+	printv(DEBUG, "connect comm\n");
 
 	c->connect(ios, std::move(socket));
 
-	accept(c);
+	printv(DEBUG, "accept overload\n");
+
+	accept(std::move(c));
 
 	//clie->init();
 	//clients_.insert(clie);
