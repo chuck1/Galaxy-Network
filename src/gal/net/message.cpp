@@ -46,10 +46,14 @@ void		gal::net::message::read(void * const v, size_t len) {
 	}*/
 void			THIS::init_input()
 {
+	if(iar_) return;
+
 	iar_ = new iarchive(ss_);
 }
 void			THIS::init_output()
 {
+	if(oar_) return;
+
 	oar_ = new oarchive(ss_);
 }
 THIS::oarchive*		THIS::get_oar()

@@ -248,7 +248,10 @@ void			gal::net::communicating::thread_read_body(
 
 	if (!ec) {
 
-		if(!read_msg_) read_msg_.reset(new gal::net::message);
+		if(1) {//if(!read_msg_) {
+			printf("reset read message\n");
+			read_msg_.reset(new gal::net::message);
+		}
 
 		// process message
 		read_msg_->reset_head();
@@ -256,6 +259,7 @@ void			gal::net::communicating::thread_read_body(
 
 		// call pure virtual function to process data in message
 		if(!_M_process_func) abort();
+		printv(DEBUG, "call process func\n");
 		_M_process_func(read_msg_);
 		
 		// restart read process
