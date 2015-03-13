@@ -37,6 +37,7 @@ namespace gal { namespace net {
 		void			thread_after_connect(
 				boost::system::error_code ec,
 				ip::tcp::resolver::iterator);
+		virtual void		after_connect() = 0;
 
 		/// handle_do_connect
 		//void	handle_do_connect();

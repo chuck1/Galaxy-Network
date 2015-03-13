@@ -68,6 +68,8 @@ void			THIS::thread_after_connect(
 		boost::system::error_code ec,
 		ip::tcp::resolver::iterator)
 {
+	//printv_func(DEBUG);
+
 	auto ios = io_service_.lock();
 
 	auto self = shared_from_this();
@@ -77,11 +79,13 @@ void			THIS::thread_after_connect(
 		abort();
 	}
 
-	std::cout << "connected" << ::std::endl;
-
+	std::cout << "gal::net::client connected" << ::std::endl;
+	
 	do_read_header();
-
+	
 	launch_write_thread();
+
+	after_connect();
 }
 
 
