@@ -48,7 +48,27 @@ void			THIS::init_input()
 {
 	if(iar_) return;
 
-	iar_ = new iarchive(ss_);
+	try {
+		iar_ = new iarchive(ss_);
+	} catch(boost::archive::archive_exception& e) {
+		printf("error: %s\n", e.what());
+
+		std::string s = ss_.str();
+		printf("string length = %lu\n", s.length());
+
+		unsigned char const * c = (unsigned char const *)s.c_str();
+		
+		printf("data:\n");
+		for(unsigned int i = 0; i < s.length(); i++) {
+			printf("%02X ", c[i]);
+		}
+		printf("\n");
+
+		printf("pos: %i\n", (int)ss_.tellg());
+
+		abort();
+	}
+
 }
 void			THIS::init_output()
 {

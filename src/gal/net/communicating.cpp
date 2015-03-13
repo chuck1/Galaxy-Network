@@ -108,8 +108,8 @@ void		gal::net::communicating::thread_write(S_MSG msg)
 		do_write();
 	}
 }
-void		gal::net::communicating::do_write() {
-
+void		gal::net::communicating::do_write()
+{
 	printv_func(DEBUG);
 
 	auto msg = write_msgs_.front();
@@ -168,7 +168,7 @@ void			gal::net::communicating::thread_do_write_body(
 		socket_->close();
 	}
 }
-void	gal::net::communicating::close()
+void			THIS::close()
 {
 	printv_func(DEBUG);
 
@@ -227,6 +227,8 @@ void			THIS::thread_read_header(
 		abort();
 	}
 
+	printf("read header = %i\n", read_header_);
+
 	do_read_body();
 }
 void	gal::net::communicating::do_read_body()
@@ -240,7 +242,7 @@ void	gal::net::communicating::do_read_body()
 			boost::bind(&gal::net::communicating::thread_read_body, self, _1, _2)
 			);
 }
-void			gal::net::communicating::thread_read_body(
+void			THIS::thread_read_body(
 		boost::system::error_code ec,
 		size_t)
 {
