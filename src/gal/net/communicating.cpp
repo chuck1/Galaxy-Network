@@ -63,75 +63,157 @@ void			THIS::connect(S_IO io_service)
 	read_msg_.reset(new gal::net::message);
 	//read_msg_->init_input();
 }
-void		gal::net::communicating::do_read_header()
-{
-	printv_func(DEBUG);
-
-	auto self = shared_from_this();
-
-	assert(self);
-
-	assert(socket_);
-
-	assert(socket_->is_open());
-
-	boost::asio::async_read(*socket_,
-			boost::asio::buffer(&read_header_, sizeof(header_type)),
-			boost::bind(
-				&gal::net::communicating::thread_read_header,
-				self,
-				_1,
-				_2)
-			);
-
-}
-void			gal::net::communicating::write(
-		S_MSG msg)
+void			THIS::write(S_MSG msg)
 {	
 	printv_func(DEBUG);
 
 	auto self = shared_from_this();
 
-	auto io = io_service_.lock();
-	
-	io->post(boost::bind(&gal::net::communicating::thread_write, self, msg));
-}
-void		gal::net::communicating::thread_write(S_MSG msg)
-{
-	printv_func(DEBUG);
 
-	bool write_in_progress = !write_msgs_.empty();
+	if(0) { // cv method
 
-	write_msgs_.push_back(msg);
 
-	if(!write_in_progress) {
-		do_write();
+		//auto io = io_service_.lock();
+
+		// wait for the write thread to wait on the cv
+		{
+			std::lock_guard<std::mutex> lk(_M_mutex_write);
+			write_msgs_.push_back(msg);
+		}
+		printf("notifying\n");
+		_M_cv_write.notify_one();
+
+	} else if(1) { // on demand method
+
+		printf("on demand\n");
+		printf("lock write mutex\n");
+		_M_mutex_write.lock();
+		printf("write mutex locked\n");
+
+		std::string str(msg->ss_.str());
+
+		header_type header = str.size();
+
+		printf("async_write: %lu\n", sizeof(header_type));
+		// non-blocking
+		boost::asio::async_write(
+				*socket_,
+				boost::asio::buffer(&header, sizeof(header_type)),
+				boost::bind(
+					&gal::net::communicating::thread_do_write_header,
+					self,
+					_1,
+					_2,
+					msg));
+
 	}
 }
-void		gal::net::communicating::do_write()
+void			THIS::launch_write_thread()
+{
+	if(0) {
+		auto ios = io_service_.lock();
+		assert(ios);
+
+		auto self = shared_from_this();
+
+		ios->post(boost::bind(&THIS::do_write, self));
+	}
+}
+/*
+   void		gal::net::communicating::thread_write(S_MSG msg0)
+   {
+   printv_func(DEBUG);
+
+   printf("lock write utex\n");
+   if(_M_utex_write.try_lock()) {
+   printf("write utex is locked\n");
+
+//bool write_in_progress = !write_msgs_.empty();
+
+
+//if(!write_in_progress) {
+do_write();//msg1);
+//}
+} else {
+printf("could not lock write utex\n");
+}
+}
+*/
+void		gal::net::communicating::do_write(/*S_MSG msg*/)
 {
 	printv_func(DEBUG);
 
-	auto msg = write_msgs_.front();
-	write_msgs_.pop_front();
+	std::unique_lock<std::mutex> lk(_M_mutex_write);
 
-	std::string str(msg->ss_.str());
+	while(1) {
+		// allow other threads to add messages to queue
+		printf("wait\n");
+		_M_cv_write.wait(lk);
+		printf("notified\n");
 
-	//printf("DEBUG: sending message of length %i\n", (int)str.size());
+		S_MSG msg;
+		//{
+		//std::lock_guard<std::utex> lk(_M_utex_write_queue);
+		msg = write_msgs_.front();
+		write_msgs_.pop_front();
+		//}
 
-	header_type header = str.size();
+		//printf("DEBUG: sending message of length %i\n", (int)str.size());
+		std::string str(msg->ss_.str());
 
-	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
+		header_type header = str.size();
 
-	boost::asio::async_write(*socket_,
-			boost::asio::buffer(&header, sizeof(header_type)),
-			boost::bind(
-				&gal::net::communicating::thread_do_write_header,
-				self,
-				_1,
-				_2,
-				msg)
-			);
+		auto self = shared_from_this();
+
+		printf("write: %lu\n", sizeof(header_type));
+
+		if(1) {
+			// non-blocking
+			boost::asio::async_write(
+					*socket_,
+					boost::asio::buffer(&header, sizeof(header_type)),
+					boost::bind(
+						&gal::net::communicating::thread_do_write_header,
+						self,
+						_1,
+						_2,
+						msg));
+
+			return;
+
+		} else if(0) {
+
+			// blocking
+			printf("blocking write: %lu\n", sizeof(header_type));
+			boost::asio::write(
+					*socket_,
+					boost::asio::buffer(&header, sizeof(header_type)));
+
+			std::string str(msg->ss_.str());
+
+			printf("blocking write: %lu\n", str.size());
+			boost::asio::write(
+					*socket_,
+					boost::asio::buffer(str.c_str(), str.size()));
+
+
+		} else if(0) {
+
+
+			boost::asio::async_write(
+					*socket_,
+					boost::asio::buffer(&header, sizeof(header_type)),
+					boost::bind(
+						&gal::net::communicating::thread_do_write_header,
+						self,
+						_1,
+						_2,
+						msg));
+
+			return;
+		}
+
+	}
 }
 void			gal::net::communicating::thread_do_write_header(
 		boost::system::error_code ec,
@@ -140,18 +222,23 @@ void			gal::net::communicating::thread_do_write_header(
 {
 	printv_func(DEBUG);
 
+	if(ec) {
+		printf("thread_do_write_header error: %s\n", ec.message().c_str());
+		abort();
+	}
+
 	std::string str(msg->ss_.str());
 
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
-	boost::asio::async_write(*socket_,
+	boost::asio::async_write(
+			*socket_,
 			boost::asio::buffer(str.c_str(), str.size()),
 			boost::bind(
 				&gal::net::communicating::thread_do_write_body,
 				self,
 				_1,
-				_2)
-			);
+				_2));
 }
 void			gal::net::communicating::thread_do_write_body(
 		boost::system::error_code ec,
@@ -159,14 +246,30 @@ void			gal::net::communicating::thread_do_write_body(
 {
 	printv_func(DEBUG);
 
-	if (!ec) {
-		if (!write_msgs_.empty()) {
-			do_write();
-		}
-	} else {
-		printf(/*ERRRO,*/ "socket error\n");
+	if(ec) {
+		printf("error: %s\n", ec.message().c_str());
 		socket_->close();
+		abort();
 	}
+
+	_M_mutex_write.unlock();
+	printf("write mutex unlocked\n");
+
+	//do_write();
+	/*
+	   std::lock_guard<std::utex> lk(_M_utex_write_queue);
+	   bool empty = write_msgs_.empty();
+
+	   if(empty) {
+	   printf("unlock write utex\n");
+	//_M_utex_write.unlock();
+	return;
+	} else {
+	do_write();
+	}
+
+	_M_utex_write.unlock();
+	*/
 }
 void			THIS::close()
 {
@@ -183,34 +286,54 @@ void			THIS::close()
 void			THIS::release()
 {
 	printv_func(DEBUG);
-	
+
 	close();
 }
 /*void		gal::net::communicating::notify_bits(unsigned int bits) {
-	{
-		std::lock_guard<std::mutex> lk(mutex_);
-		bits_ |= bits;
-	}
-	cv_.notify_all();
-}*/
+  {
+  std::lock_guard<std::utex> lk(utex_);
+  bits_ |= bits;
+  }
+  cv_.notify_all();
+  }*/
 /*void		gal::net::communicating::thread_write_body(boost::system::error_code ec, size_t length, std::shared_ptr<gal::net::omessage> message) {
 
-	std::string str(message->ss_.str());
+  std::string str(message->ss_.str());
 
-	int result = boost::asio::write(socket_, boost::asio::buffer(str.c_str(), str.size()));
+  int result = boost::asio::write(socket_, boost::asio::buffer(str.c_str(), str.size()));
 
-	if(result < 0) {
-		perror("send:");
-		notify_bits(TERMINATE & ERROR);
-		return;
-	}
+  if(result < 0) {
+  perror("send:");
+  notify_bits(TERMINATE & ERROR);
+  return;
+  }
 
-	if(result < (int)str.size()) {
-		printf("unknown error\n");
-		notify_bits(TERMINATE & ERROR);
-		return;
-	}
-}*/
+  if(result < (int)str.size()) {
+  printf("unknown error\n");
+  notify_bits(TERMINATE & ERROR);
+  return;
+  }
+  }*/
+void			THIS::do_read_header()
+{
+	printv_func(DEBUG);
+
+	auto self = shared_from_this();
+
+	assert(socket_);
+	assert(socket_->is_open());
+
+	printf("read: %lu\n", sizeof(header_type));
+	boost::asio::async_read(
+			*socket_,
+			boost::asio::buffer(&read_header_, sizeof(header_type)),
+			boost::bind(
+				&THIS::thread_read_header,
+				self,
+				_1,
+				_2));
+
+}
 void			THIS::thread_read_header(
 		boost::system::error_code ec,
 		size_t length)
@@ -237,9 +360,15 @@ void	gal::net::communicating::do_read_body()
 
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
+	printf("read: %lu\n", sizeof(read_header_));
+
 	boost::asio::async_read(*socket_,
 			boost::asio::buffer(read_buffer_, read_header_),
-			boost::bind(&gal::net::communicating::thread_read_body, self, _1, _2)
+			boost::bind(
+				&gal::net::communicating::thread_read_body,
+				self,
+				_1,
+				_2)
 			);
 }
 void			THIS::thread_read_body(
@@ -263,16 +392,16 @@ void			THIS::thread_read_body(
 		if(!_M_process_func) abort();
 		printv(DEBUG, "call process func\n");
 		_M_process_func(read_msg_);
-		
+
 		// restart read process
 		do_read_header();
-	} else {
-		// error
-		printf("%s: error\n", __PRETTY_FUNCTION__);
-		return;
-	}
+		} else {
+			// error
+			printf("%s: error\n", __PRETTY_FUNCTION__);
+			return;
+		}
 
-}
+	}
 
 
 

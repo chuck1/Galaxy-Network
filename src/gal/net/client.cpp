@@ -54,14 +54,34 @@ void			THIS::do_connect(
 		socket_.reset(new ip::tcp::socket(*ios));
 	assert(socket_);
 
-	boost::asio::async_connect(*socket_, endpoint_iterator,
-			[this](boost::system::error_code ec, ip::tcp::resolver::iterator) {
-			if (!ec) {
-			do_read_header();
-			::std::cout << "connected" << ::std::endl;
-			}
-			});
+	boost::asio::async_connect(
+			*socket_,
+			endpoint_iterator,
+			boost::bind(
+				&THIS::thread_after_connect,
+				shared_from_this(),
+				_1,
+				_2));
 
+}
+void			THIS::thread_after_connect(
+		boost::system::error_code ec,
+		ip::tcp::resolver::iterator)
+{
+	auto ios = io_service_.lock();
+
+	auto self = shared_from_this();
+
+	if (ec) {
+		printf("connect failed\n");
+		abort();
+	}
+
+	std::cout << "connected" << ::std::endl;
+
+	do_read_header();
+
+	launch_write_thread();
 }
 
 
