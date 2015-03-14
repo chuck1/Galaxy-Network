@@ -44,12 +44,15 @@ void		gal::net::message::read(void * const v, size_t len) {
 	
 	if(ss_.fail()) abort();
 	}*/
-void			THIS::init_input()
+void			THIS::init_input(gal::itf::shared * shared_parent)
 {
 	if(iar_) return;
+	
+	assert(shared_parent);
 
 	try {
 		iar_ = new iarchive(ss_);
+		iar_->_M_shared_parent = shared_parent;
 	} catch(boost::archive::archive_exception& e) {
 		printf("error: %s\n", e.what());
 
@@ -70,11 +73,14 @@ void			THIS::init_input()
 	}
 
 }
-void			THIS::init_output()
+void			THIS::init_output(gal::itf::shared * shared_parent)
 {
 	if(oar_) return;
 
+	assert(shared_parent);
+
 	oar_ = new oarchive(ss_);
+	oar_->_M_shared_parent = shared_parent;
 }
 THIS::oarchive*		THIS::get_oar()
 {
