@@ -11,9 +11,11 @@
 
 
 //#if defined GAL_NET_USE_BOOST
-#include <boost/archive/polymorphic_binary_oarchive.hpp>
-#include <boost/archive/polymorphic_binary_iarchive.hpp>
+//#include <boost/archive/polymorphic_binary_oarchive.hpp>
+//#include <boost/archive/polymorphic_binary_iarchive.hpp>
 
+#include <gal/archive/polymorphic_binary_oarchive.hpp>
+#include <gal/archive/polymorphic_binary_iarchive.hpp>
 
 /*
 #else
@@ -35,8 +37,12 @@ namespace gal { namespace net {
 	{
 		public:
 			friend class gal::net::communicating;
-			typedef boost::archive::polymorphic_binary_oarchive oarchive;
-			typedef boost::archive::polymorphic_binary_iarchive iarchive;
+
+			//typedef boost::archive::polymorphic_binary_oarchive oarchive;
+			//typedef boost::archive::polymorphic_binary_iarchive iarchive;
+			typedef gal::archive::polymorphic_binary_oarchive oarchive;
+			typedef gal::archive::polymorphic_binary_iarchive iarchive;
+
 			/// ctor
 			message();
 			virtual ~message();
