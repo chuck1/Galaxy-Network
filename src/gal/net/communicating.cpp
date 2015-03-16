@@ -341,7 +341,14 @@ void			THIS::thread_read_header(
 	printv_func(DEBUG);
 
 	if(ec) {
-		printf("%s : %s\n", __PRETTY_FUNCTION__, ec.message().c_str());
+		printv(ERROR, "%s : %s\n", __PRETTY_FUNCTION__, ec.message().c_str());
+		
+		if(ec.value() == boost::asio::error::eof) {
+			printv(ERROR, "closing connection\n");
+			close();
+			return;
+		}
+
 		abort();
 	}
 
@@ -376,33 +383,37 @@ void			THIS::thread_read_body(
 		size_t)
 {
 	printv_func(DEBUG);
-
-	if (!ec) {
-
-		if(1) {//if(!read_msg_) {
-			printf("reset read message\n");
-			read_msg_.reset(new gal::net::message);
-		}
-
-		// process message
-		read_msg_->reset_head();
-		read_msg_->ss_.write(read_buffer_, read_header_);
-
-		// call pure virtual function to process data in message
-		if(!_M_process_func) abort();
-		printv(DEBUG, "call process func\n");
-		_M_process_func(read_msg_);
-
-		// restart read process
-		do_read_header();
-		} else {
-			// error
-			printf("%s: error\n", __PRETTY_FUNCTION__);
+	
+	if(ec) {
+		printv(ERROR, "%s : %s\n", __PRETTY_FUNCTION__, ec.message().c_str());
+		
+		if(ec.value() == boost::asio::error::eof) {
+			printv(ERROR, "closing connection\n");
+			close();
 			return;
 		}
-
+		
+		abort();
 	}
 
+
+	if(1) {//if(!read_msg_) {
+		printf("reset read message\n");
+		read_msg_.reset(new gal::net::message);
+	}
+
+	// process message
+	read_msg_->reset_head();
+	read_msg_->ss_.write(read_buffer_, read_header_);
+
+	// call pure virtual function to process data in message
+	if(!_M_process_func) abort();
+	printv(DEBUG, "call process func\n");
+	_M_process_func(read_msg_);
+
+	// restart read process
+	do_read_header();
+}
 
 
 
