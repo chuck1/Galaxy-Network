@@ -14,7 +14,7 @@
 
 typedef gal::net::communicating THIS;
 
-template<> int gal::tmp::Verbosity<gal::net::communicating>::_M_level = DEBUG;
+//template<> int gal::tmp::Verbosity<gal::net::communicating>::_M_level = DEBUG;
 
 THIS::communicating()
 {
@@ -80,21 +80,21 @@ void			THIS::write(S_MSG msg)
 			std::lock_guard<std::mutex> lk(_M_mutex_write);
 			write_msgs_.push_back(msg);
 		}
-		printf("notifying\n");
+		printv(DEBUG, "notifying\n");
 		_M_cv_write.notify_one();
 
 	} else if(1) { // on demand method
 
-		printf("on demand\n");
-		printf("lock write mutex\n");
+		printv(DEBUG, "on demand\n");
+		printv(DEBUG, "lock write mutex\n");
 		_M_mutex_write.lock();
-		printf("write mutex locked\n");
+		printv(DEBUG, "write mutex locked\n");
 
 		std::string str(msg->ss_.str());
 
 		header_type header = str.size();
 
-		printf("async_write: %lu\n", sizeof(header_type));
+		printv(DEBUG, "async_write: %lu\n", sizeof(header_type));
 		// non-blocking
 		boost::asio::async_write(
 				*socket_,
@@ -247,13 +247,13 @@ void			gal::net::communicating::thread_do_write_body(
 	printv_func(DEBUG);
 
 	if(ec) {
-		printf("error: %s\n", ec.message().c_str());
+		printv(CRITICAL, "error: %s\n", ec.message().c_str());
 		socket_->close();
 		abort();
 	}
 
 	_M_mutex_write.unlock();
-	printf("write mutex unlocked\n");
+	printv(DEBUG, "write mutex unlocked\n");
 
 	//do_write();
 	/*
@@ -323,7 +323,7 @@ void			THIS::do_read_header()
 	assert(socket_);
 	assert(socket_->is_open());
 
-	printf("read: %lu\n", sizeof(header_type));
+	printv(DEBUG, "read: %lu\n", sizeof(header_type));
 	boost::asio::async_read(
 			*socket_,
 			boost::asio::buffer(&read_header_, sizeof(header_type)),
@@ -357,7 +357,7 @@ void			THIS::thread_read_header(
 		abort();
 	}
 
-	printf("read header = %i\n", read_header_);
+	printv(DEBUG, "read header = %i\n", read_header_);
 
 	do_read_body();
 }
@@ -367,7 +367,7 @@ void	gal::net::communicating::do_read_body()
 
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
-	printf("read: %lu\n", sizeof(read_header_));
+	printv(DEBUG, "read: %lu\n", sizeof(read_header_));
 
 	boost::asio::async_read(*socket_,
 			boost::asio::buffer(read_buffer_, read_header_),
@@ -398,7 +398,7 @@ void			THIS::thread_read_body(
 
 
 	if(1) {//if(!read_msg_) {
-		printf("reset read message\n");
+		printv(DEBUG, "reset read message\n");
 		read_msg_.reset(new gal::net::message);
 	}
 
