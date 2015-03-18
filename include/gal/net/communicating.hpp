@@ -87,26 +87,19 @@ namespace gal { namespace net {
 	protected:
 		//void					thread_write(
 		//		std::shared_ptr<gal::net::message> msg);
-		void					thread_do_write_header(
+		void			thread_do_write_header(
 				boost::system::error_code ec,
 				size_t length,
 				std::shared_ptr<gal::net::message> msg);
-		void					thread_do_write_body(
+		void			thread_do_write_body(
 				boost::system::error_code ec,
 				size_t length);
-		/** @brief thread read
-		*/
-		void						thread_read();
-		/** @brief thread read header
-		*/
-		void						thread_read_header(boost::system::error_code ec, size_t length);
-		void						do_read_body();
-		/** @brief thread read body
-		*/
-		void						thread_read_body(boost::system::error_code ec, size_t);
-		/** @brief handle write
-		*/
-		void						handle_do_write();
+		void			handle_do_write();
+		void			thread_read();
+		void			thread_read_header(boost::system::error_code ec, size_t length);
+		void			do_read_body();
+		void			thread_read_body(boost::system::error_code ec, size_t);
+		virtual void		reset_read_msg() = 0;	
 	protected:
 		S_SOC					socket_;
 	public:

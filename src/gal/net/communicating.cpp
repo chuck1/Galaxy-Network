@@ -45,9 +45,9 @@ void			THIS::connect(
 	socket_ = std::move(socket);
 
 	io_service_ = io_service;
-
-	printv(DEBUG, "read msg\n");
-	read_msg_.reset(new gal::net::message);
+	
+	reset_read_msg();
+	//read_msg_.reset(new gal::net::message);
 	//read_msg_->init_input();
 
 	printv(DEBUG, "done\n");
@@ -60,7 +60,8 @@ void			THIS::connect(S_IO io_service)
 
 	io_service_ = io_service;
 
-	read_msg_.reset(new gal::net::message);
+	reset_read_msg();
+	//read_msg_.reset(new gal::net::message);
 	//read_msg_->init_input();
 }
 void			THIS::write(S_MSG msg)
@@ -396,11 +397,7 @@ void			THIS::thread_read_body(
 		abort();
 	}
 
-
-	if(1) {//if(!read_msg_) {
-		printv(DEBUG, "reset read message\n");
-		read_msg_.reset(new gal::net::message);
-	}
+	reset_read_msg();
 
 	// process message
 	read_msg_->reset_head();

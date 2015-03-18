@@ -52,7 +52,7 @@ namespace gal { namespace net {
 			void			thread_accept(boost::system::error_code ec);
 			void			callback_accept(S_SOC socket);
 			void			send_all(S_MSG msg);
-			virtual void		accept(S_COM &&) = 0;
+			virtual void		accept(S_SOC &&) = 0;
 		protected:
 			W_IO			io_service_;
 			S_ACC			acceptor_;

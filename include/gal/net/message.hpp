@@ -9,6 +9,7 @@
 #include <memory>
 #include <deque>
 
+#include <gal/shared.hpp>
 
 //#if defined GAL_NET_USE_BOOST
 //#include <boost/archive/polymorphic_binary_oarchive.hpp>
@@ -33,7 +34,7 @@ typedef gal::net::iarchive iarchive;
 namespace gal { namespace net {
 	/// message
 	class message:
-		public std::enable_shared_from_this<message>
+		public gal::enable_shared_from_this<message>
 	{
 		public:
 			friend class gal::net::communicating;
@@ -65,8 +66,8 @@ namespace gal { namespace net {
 			  template<typename T> void	read(T& t) {
 			  read(&t, sizeof(T));
 			  }*/
-			oarchive*			get_oar();
-			iarchive*			get_iar();
+			virtual oarchive*		get_oar() = 0;
+			virtual iarchive*		get_iar() = 0;
 		protected:
 			std::stringstream		ss_;
 			oarchive*			oar_;

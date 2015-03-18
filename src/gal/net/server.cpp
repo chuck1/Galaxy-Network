@@ -106,7 +106,8 @@ void			THIS::thread_accept(boost::system::error_code ec)
 void			THIS::callback_accept(S_SOC socket)
 {
 	printv_func(DEBUG);
-	
+
+	/*	
 	auto ios = io_service_.lock();
 	assert(ios);
 	
@@ -119,8 +120,8 @@ void			THIS::callback_accept(S_SOC socket)
 	c->connect(ios, std::move(socket));
 
 	printv(DEBUG, "accept overload\n");
-
-	accept(std::move(c));
+	*/
+	accept(std::move(socket));
 
 	//clie->init();
 	//clients_.insert(clie);
