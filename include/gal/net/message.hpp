@@ -10,10 +10,11 @@
 #include <deque>
 
 #include <gal/shared.hpp>
+#include <gal/stl/verbosity.hpp>
 
 //#if defined GAL_NET_USE_BOOST
-//#include <boost/archive/polymorphic_binary_oarchive.hpp>
-//#include <boost/archive/polymorphic_binary_iarchive.hpp>
+#include <boost/archive/polymorphic_binary_oarchive.hpp>
+#include <boost/archive/polymorphic_binary_iarchive.hpp>
 
 #include <gal/archive/polymorphic_binary_oarchive.hpp>
 #include <gal/archive/polymorphic_binary_iarchive.hpp>
@@ -34,11 +35,12 @@ typedef gal::net::iarchive iarchive;
 namespace gal { namespace net {
 	/// message
 	class message:
+		public gal::tmp::Verbosity<gal::net::message>,
 		public gal::enable_shared_from_this<message>
 	{
 		public:
 			friend class gal::net::communicating;
-
+			using gal::tmp::Verbosity<gal::net::message>::printv;
 			//typedef boost::archive::polymorphic_binary_oarchive oarchive;
 			//typedef boost::archive::polymorphic_binary_iarchive iarchive;
 			typedef gal::archive::polymorphic_binary_oarchive oarchive;
@@ -66,8 +68,10 @@ namespace gal { namespace net {
 			  template<typename T> void	read(T& t) {
 			  read(&t, sizeof(T));
 			  }*/
-			virtual oarchive*		get_oar() = 0;
-			virtual iarchive*		get_iar() = 0;
+			virtual void			reset_iarchive() = 0;
+			virtual void			reset_oarchive() = 0;
+			oarchive*			get_oar();
+			iarchive*			get_iar();
 		protected:
 			std::stringstream		ss_;
 			oarchive*			oar_;

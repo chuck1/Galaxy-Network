@@ -21,8 +21,8 @@ THIS::communicating()
 	printv_func(DEBUG);
 }
 THIS::communicating(THIS && c):
-	socket_(std::move(c.socket_)),
-	io_service_(std::move(c.io_service_))
+	io_service_(std::move(c.io_service_)),
+	socket_(std::move(c.socket_))
 {
 	printv_func(DEBUG);
 }
@@ -344,7 +344,9 @@ void			THIS::thread_read_header(
 	if(ec) {
 		printv(ERROR, "%s : %s\n", __PRETTY_FUNCTION__, ec.message().c_str());
 		
-		if(ec.value() == boost::asio::error::eof) {
+		if(
+				(ec.value() == boost::asio::error::eof) ||
+				(ec.value() == boost::asio::error::connection_reset)) {
 			printv(ERROR, "closing connection\n");
 			close();
 			return;

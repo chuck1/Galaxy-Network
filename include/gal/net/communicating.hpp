@@ -100,31 +100,31 @@ namespace gal { namespace net {
 		void			do_read_body();
 		void			thread_read_body(boost::system::error_code ec, size_t);
 		virtual void		reset_read_msg() = 0;	
+	public:
+		W_IO					io_service_;
 	protected:
 		S_SOC					socket_;
-	public:
-		W_IO						io_service_;
+		S_MSG					read_msg_;
 	private:
 		/** @name Read Data Members @{ */
-		S_MSG						read_msg_;
-		header_type					read_header_;
-		char						read_buffer_[MAX_MESSAGE_LENGTH];
+		header_type				read_header_;
+		char					read_buffer_[MAX_MESSAGE_LENGTH];
 		/** @} */
-		header_type					write_header_;
+		header_type				write_header_;
 		/** message deque
 		*/
-		std::deque<S_MSG>				write_msgs_;
+		std::deque<S_MSG>			write_msgs_;
 		/** process body
 		*/
 		/** thread write
 		*/
-		std::thread					write_thread_;
+		std::thread				write_thread_;
 		/** thread read
 		*/
-		std::thread					read_thread_;
-		std::condition_variable				_M_cv_write;
-		std::mutex					_M_mutex_write_queue;
-		std::mutex					_M_mutex_write;
+		std::thread				read_thread_;
+		std::condition_variable			_M_cv_write;
+		std::mutex				_M_mutex_write_queue;
+		std::mutex				_M_mutex_write;
 	};
 }}
 
