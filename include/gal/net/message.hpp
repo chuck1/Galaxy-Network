@@ -49,8 +49,8 @@ namespace gal { namespace net {
 			/// ctor
 			message();
 			virtual ~message();
-			void				init_input(gal::itf::shared *);
-			void				init_output(gal::itf::shared *);
+			virtual void			init_input(gal::itf::shared *);
+			virtual void			init_output(gal::itf::shared *);
 			//void				set(void const * const, unsigned int);
 			void				reset_head();
 			/*void				write(void const * const, size_t);
