@@ -55,12 +55,14 @@ namespace gal { namespace net {
 		 */
 		void			connect(
 				S_IO io_service);
+	protected:
 		/** @brief write
 		 *
 		 * send %message to socket
 		 * @param %message %message to send
 		 */
-		void			write(S_MSG message);
+		virtual void		write(S_MSG message);
+	public:
 		/** @brief close
 		 *
 		 * close the socket and terminate threads

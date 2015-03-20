@@ -66,14 +66,13 @@ void			THIS::connect(S_IO io_service)
 }
 void			THIS::write(S_MSG msg)
 {	
+
 	printv_func(DEBUG);
 
 	auto self = shared_from_this();
 
 
 	if(0) { // cv method
-
-
 		//auto io = io_service_.lock();
 
 		// wait for the write thread to wait on the cv
@@ -166,10 +165,10 @@ void		gal::net::communicating::do_write(/*S_MSG msg*/)
 
 		auto self = shared_from_this();
 
-		printf("write: %lu\n", sizeof(header_type));
 
 		if(1) {
 			// non-blocking
+			printf("async write: %lu\n", sizeof(header_type));
 			boost::asio::async_write(
 					*socket_,
 					boost::asio::buffer(&header, sizeof(header_type)),
@@ -232,6 +231,8 @@ void			gal::net::communicating::thread_do_write_header(
 
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
+	printv(DEBUG, "async write: %lu\n", str.size());
+
 	boost::asio::async_write(
 			*socket_,
 			boost::asio::buffer(str.c_str(), str.size()),
@@ -253,6 +254,7 @@ void			gal::net::communicating::thread_do_write_body(
 		abort();
 	}
 
+	printv(DEBUG, "write successful\n");
 	_M_mutex_write.unlock();
 	printv(DEBUG, "write mutex unlocked\n");
 
@@ -324,7 +326,7 @@ void			THIS::do_read_header()
 	assert(socket_);
 	assert(socket_->is_open());
 
-	printv(DEBUG, "read: %lu\n", sizeof(header_type));
+	printv(DEBUG, "async read: %lu\n", sizeof(header_type));
 	boost::asio::async_read(
 			*socket_,
 			boost::asio::buffer(&read_header_, sizeof(header_type)),
@@ -360,7 +362,7 @@ void			THIS::thread_read_header(
 		abort();
 	}
 
-	printv(DEBUG, "read header = %i\n", read_header_);
+	//printv(DEBUG, "read header = %i\n", read_header_);
 
 	do_read_body();
 }
@@ -370,7 +372,7 @@ void	gal::net::communicating::do_read_body()
 
 	auto self(std::dynamic_pointer_cast<gal::net::communicating>(shared_from_this()));
 
-	printv(DEBUG, "read: %lu\n", sizeof(read_header_));
+	printv(DEBUG, "async read: %lu\n", read_header_);
 
 	boost::asio::async_read(*socket_,
 			boost::asio::buffer(read_buffer_, read_header_),

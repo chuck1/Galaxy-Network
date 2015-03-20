@@ -79,12 +79,14 @@ void			THIS::thread_after_connect(
 		abort();
 	}
 
-	std::cout << "gal::net::client connected" << ::std::endl;
-	
+	printv(INFO, "gal::net::client connected\n");
+
+	// async
 	do_read_header();
-	
+	// async
 	launch_write_thread();
 
+	// will wait for server desc
 	after_connect();
 }
 
