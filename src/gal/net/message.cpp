@@ -44,7 +44,7 @@ void		gal::net::message::read(void * const v, size_t len) {
 	
 	if(ss_.fail()) abort();
 	}*/
-void			THIS::init_input(gal::itf::shared * shared_parent)
+void			THIS::init_input(gal::managed_object * shared_parent)
 {
 	if(iar_) return;
 	
@@ -75,7 +75,7 @@ void			THIS::init_input(gal::itf::shared * shared_parent)
 	}
 
 }
-void			THIS::init_output(gal::itf::shared * shared_parent)
+void			THIS::init_output(gal::managed_object * shared_parent)
 {
 	if(oar_) return;
 

@@ -29,7 +29,7 @@ namespace ip = boost::asio::ip;
 namespace gal { namespace net {
 	class server:
 		public gal::tmp::Verbosity<gal::net::server>,
-		virtual public gal::itf::shared
+		virtual public gal::managed_object
 	{
 		public:
 			using gal::tmp::Verbosity<gal::net::server>::printv;
