@@ -54,7 +54,8 @@ void			THIS::init_input(gal::managed_object * shared_parent)
 		//iar_ = new iarchive(ss_);
 		reset_iarchive();
 		
-		iar_->_M_shared_parent = shared_parent;
+		//iar_->_M_shared_parent = shared_parent;
+		iar_->gal::managed_object::init(shared_parent->get_registry());
 	} catch(boost::archive::archive_exception& e) {
 		printf("error: %s\n", e.what());
 
@@ -84,7 +85,8 @@ void			THIS::init_output(gal::managed_object * shared_parent)
 	//oar_ = new oarchive(ss_);
 	reset_oarchive();
 	
-	oar_->_M_shared_parent = shared_parent;
+	//oar_->_M_shared_parent = shared_parent;
+	oar_->gal::managed_object::init(shared_parent->get_registry());
 }
 THIS::oarchive*		THIS::get_oar()
 {
