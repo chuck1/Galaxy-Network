@@ -88,12 +88,12 @@ void			THIS::init_output(gal::managed_object * shared_parent)
 	//oar_->_M_shared_parent = shared_parent;
 	oar_->gal::managed_object::init(shared_parent->get_registry());
 }
-THIS::oarchive*		THIS::get_oar()
+THIS::S_OA		THIS::get_oar()
 {
 	assert(oar_);
 	return oar_;
 }
-THIS::iarchive*		THIS::get_iar()
+THIS::S_IA		THIS::get_iar()
 {
 	assert(iar_);
 	return iar_;

@@ -45,6 +45,8 @@ namespace gal { namespace net {
 			//typedef boost::archive::polymorphic_binary_iarchive iarchive;
 			typedef gal::archive::polymorphic_binary_oarchive oarchive;
 			typedef gal::archive::polymorphic_binary_iarchive iarchive;
+			typedef std::shared_ptr<oarchive> S_OA;
+			typedef std::shared_ptr<iarchive> S_IA;
 
 			/// ctor
 			message();
@@ -70,12 +72,12 @@ namespace gal { namespace net {
 			  }*/
 			virtual void			reset_iarchive() = 0;
 			virtual void			reset_oarchive() = 0;
-			oarchive*			get_oar();
-			iarchive*			get_iar();
+			S_OA				get_oar();
+			S_IA				get_iar();
 		protected:
 			std::stringstream		ss_;
-			oarchive*			oar_;
-			iarchive*			iar_;
+			S_OA				oar_;
+			S_IA				iar_;
 	};
 }}
 
