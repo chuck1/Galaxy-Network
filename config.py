@@ -1,5 +1,6 @@
+import pbs.classes.Static
 
-l = Static("galaxy_net")
+l = pbs.classes.Static.Static("galaxy_net", self)
 
 l.require("galaxy_std")
 
