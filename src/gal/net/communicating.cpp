@@ -18,13 +18,11 @@ typedef gal::net::communicating THIS;
 
 THIS::communicating()
 {
-	printv_func(DEBUG);
 }
 THIS::communicating(THIS && c):
 	io_service_(std::move(c.io_service_)),
 	socket_(std::move(c.socket_))
 {
-	printv_func(DEBUG);
 }
 THIS&			THIS::operator=(communicating && c)
 {
