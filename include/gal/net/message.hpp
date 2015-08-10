@@ -10,7 +10,7 @@
 #include <deque>
 
 #include <gal/shared.hpp>
-#include <gal/stl/verbosity.hpp>
+#include <gal/verb/Verbosity.hpp>
 
 //#if defined GAL_NET_USE_BOOST
 #include <boost/archive/polymorphic_binary_oarchive.hpp>
@@ -35,12 +35,12 @@ typedef gal::net::iarchive iarchive;
 namespace gal { namespace net {
 	/// message
 	class message:
-		public gal::tmp::Verbosity<gal::net::message>,
+		public gal::verb::Verbosity<gal::net::message>,
 		public gal::enable_shared_from_this<message>
 	{
 		public:
 			friend class gal::net::communicating;
-			using gal::tmp::Verbosity<gal::net::message>::printv;
+			using gal::verb::Verbosity<gal::net::message>::printv;
 			//typedef boost::archive::polymorphic_binary_oarchive oarchive;
 			//typedef boost::archive::polymorphic_binary_iarchive iarchive;
 			typedef gal::archive::polymorphic_binary_oarchive oarchive;

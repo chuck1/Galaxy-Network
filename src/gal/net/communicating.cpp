@@ -14,7 +14,7 @@
 
 typedef gal::net::communicating THIS;
 
-//template<> int gal::tmp::Verbosity<gal::net::communicating>::_M_level = DEBUG;
+//template<> int gal::verb::Verbosity<gal::net::communicating>::_M_level = DEBUG;
 
 THIS::communicating()
 {

@@ -18,7 +18,7 @@
 
 #include <boost/asio.hpp>
 
-#include <gal/stl/verbosity.hpp>
+#include <gal/verb/Verbosity.hpp>
 #include <gal/stl/map.hpp>
 
 #include <gal/net/basic.hpp>
@@ -28,11 +28,11 @@ namespace ip = boost::asio::ip;
 
 namespace gal { namespace net {
 	class server:
-		public gal::tmp::Verbosity<gal::net::server>,
+		public gal::verb::Verbosity<gal::net::server>,
 		virtual public gal::managed_object
 	{
 		public:
-			using gal::tmp::Verbosity<gal::net::server>::printv;
+			using gal::verb::Verbosity<gal::net::server>::printv;
 			typedef gal::net::communicating				COM;
 			typedef std::shared_ptr<COM>				S_COM;
 			typedef std::shared_ptr<gal::net::message>		S_MSG;
