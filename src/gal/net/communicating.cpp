@@ -352,7 +352,7 @@ void			THIS::thread_read_header(
 			return;
 		}
 
-		abort();
+		assert(0);
 	}
 
 	if(length != sizeof(header_type)) {
@@ -396,7 +396,7 @@ void			THIS::thread_read_body(
 			return;
 		}
 		
-		abort();
+		assert(0);
 	}
 
 	reset_read_msg();
@@ -406,9 +406,10 @@ void			THIS::thread_read_body(
 	read_msg_->ss_.write(read_buffer_, read_header_);
 
 	// call pure virtual function to process data in message
-	if(!_M_process_func) abort();
+	//assert(_M_process_func);
 	printv(DEBUG, "call process func\n");
-	_M_process_func(read_msg_);
+	//_M_process_func(read_msg_);
+	v_process(read_msg_);
 
 	// restart read process
 	do_read_header();

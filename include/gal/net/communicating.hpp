@@ -72,22 +72,26 @@ namespace gal { namespace net {
 		communicating&			operator=(communicating &&);
 	private:
 		communicating(communicating const &) = default;
-		communicating&				operator=(communicating const &) = default;
+		communicating&			operator=(communicating const &) = default;
 	protected:
 		communicating(communicating &&);
 		/*
 		 * user-supplied function to process incomming messages
 		 * 
-		 * using std::function instead of pure virtual function so that gal::net::server can instantiate instances of gal::net::communicating
+		 * using std::function instead of pure virtual function so 
+		 * that gal::net::server can instantiate instances of gal::net::communicating
 		 * without being a template class
+		 *
+		 * future me: I dont understand the above, trying pure virt
 		 */
-		std::function<void(S_MSG)>		_M_process_func;
+		//std::function<void(S_MSG)>	_M_process_func;
+		virtual void		v_process(S_MSG) = 0;
 	public:
-		void		launch_write_thread();
-		void		do_read_header();
-		void		do_write(/*S_MSG*/);
+		void			launch_write_thread();
+		void			do_read_header();
+		void			do_write(/*S_MSG*/);
 	protected:
-		//void					thread_write(
+		//void			thread_write(
 		//		std::shared_ptr<gal::net::message> msg);
 		void			thread_do_write_header(
 				boost::system::error_code ec,
@@ -98,7 +102,8 @@ namespace gal { namespace net {
 				size_t length);
 		void			handle_do_write();
 		void			thread_read();
-		void			thread_read_header(boost::system::error_code ec, size_t length);
+		void			thread_read_header(
+				boost::system::error_code ec, size_t length);
 		void			do_read_body();
 		void			thread_read_body(boost::system::error_code ec, size_t);
 		virtual void		reset_read_msg() = 0;	

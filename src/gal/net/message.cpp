@@ -42,7 +42,7 @@ void		gal::net::message::read(void * const v, size_t len) {
 	
 	ss_.read((char*)v,len);
 	
-	if(ss_.fail()) abort();
+	if(ss_.fail()) assert(0);
 	}*/
 void			THIS::init_input(gal::managed_object * shared_parent)
 {
@@ -72,7 +72,7 @@ void			THIS::init_input(gal::managed_object * shared_parent)
 
 		printf("pos: %i\n", (int)ss_.tellg());
 
-		abort();
+		assert(0);
 	}
 
 }
