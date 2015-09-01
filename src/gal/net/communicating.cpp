@@ -83,6 +83,7 @@ void			THIS::write(S_MSG msg)
 
 	} else if(1) { // on demand method
 
+
 		printv(DEBUG, "on demand\n");
 		printv(DEBUG, "lock write mutex\n");
 		_M_mutex_write.lock();
@@ -91,6 +92,8 @@ void			THIS::write(S_MSG msg)
 		std::string str(msg->ss_.str());
 
 		header_type header = str.size();
+
+		printv(DEBUG, "write: header = %lu\n", header);
 
 		printv(DEBUG, "async_write: %lu\n", sizeof(header_type));
 		// non-blocking
