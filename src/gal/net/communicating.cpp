@@ -186,7 +186,7 @@ void		gal::net::communicating::thread_write(S_MSG msg)
 	// non-blocking
 	// sets up a sequence of async calls and callbacks
 	// at the end, the mutex_write is unlocked
-	printf("async write: header = {uid=%i, size=%i}, sizeof(header_type) = %lu\n",
+	printv(DEBUG, "async write: header = {uid=%i, size=%i}, sizeof(header_type) = %lu\n",
 			header._M_uid,
 			header._M_size,
 			sizeof(header_type));
