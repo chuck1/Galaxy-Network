@@ -216,9 +216,9 @@ void		gal::net::communicating::do_write(/*S_MSG msg*/)
 
 	while(1) {
 		// allow other threads to add messages to queue
-		printv(INFO, "do_write: wait\n");
+		printv(DEBUG, "do_write: wait\n");
 		_M_cv_write.wait(lk);
-		printv(INFO, "do_write: notified\n");
+		printv(DEBUG, "do_write: notified\n");
 
 		//{
 		//std::lock_guard<std::utex> lk(_M_utex_write_queue);
