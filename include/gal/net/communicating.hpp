@@ -18,7 +18,9 @@ namespace ip = boost::asio::ip;
 
 #include <gal/shared.hpp>
 #include <gal/verb/Verbosity.hpp>
+#include <gal/Flag.hpp>
 
+#include <gal/net/barrier.hpp>
 #include <gal/net/decl.hpp>
 #include <gal/net/basic.hpp>
 #include <gal/net/message.hpp>
@@ -32,9 +34,30 @@ namespace gal { namespace net {
 	{
 	public:
 		typedef gal::net::communicating COM;
+
 		using gal::verb::Verbosity<COM>::printv;
 		using gal::enable_shared_from_this<COM>::shared_from_this;
-		typedef int				header_type;
+		
+		DEFINE_FLAG(Flag,
+				((WRITE_THREAD_LAUNCHED)(1<<0))
+				)
+
+		class Header
+		{
+		public:
+			Header(int size, int uid):
+				_M_size(size),
+				_M_uid(uid)
+			{}
+			Header():
+				_M_size(-1),
+				_M_uid(-1)
+			{}
+			int	_M_size;
+			int	_M_uid;
+		};
+
+		typedef Header						header_type;
 		typedef std::shared_ptr<boost::asio::io_service>	S_IO;
 		typedef std::weak_ptr<boost::asio::io_service>		W_IO;
 		typedef std::shared_ptr<ip::tcp::socket>		S_SOC;
@@ -88,11 +111,12 @@ namespace gal { namespace net {
 		virtual void		v_process(S_MSG) = 0;
 	public:
 		void			launch_write_thread();
+		void			launch();
 		void			do_read_header();
 		void			do_write(/*S_MSG*/);
 	protected:
-		//void			thread_write(
-		//		std::shared_ptr<gal::net::message> msg);
+		void			thread_write(
+				std::shared_ptr<gal::net::message> msg);
 		void			thread_do_write_header(
 				boost::system::error_code ec,
 				size_t length,
@@ -113,6 +137,7 @@ namespace gal { namespace net {
 		S_SOC					socket_;
 		S_MSG					read_msg_;
 	private:
+		Flag					_M_flag;
 		/** @name Read Data Members @{ */
 		header_type				read_header_;
 		char					read_buffer_[MAX_MESSAGE_LENGTH];
@@ -132,6 +157,10 @@ namespace gal { namespace net {
 		std::condition_variable			_M_cv_write;
 		std::mutex				_M_mutex_write_queue;
 		std::mutex				_M_mutex_write;
+	
+		gal::net::Barrier<2>			_M_barrier_write_thread_launch;
+	
+		int					_M_write_count;
 	};
 }}
 
