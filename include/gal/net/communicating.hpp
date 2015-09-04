@@ -18,7 +18,7 @@ namespace ip = boost::asio::ip;
 
 #include <gal/shared.hpp>
 #include <gal/verb/Verbosity.hpp>
-#include <gal/Flag.hpp>
+#include <gal/macro/Flag.hpp>
 
 #include <gal/net/barrier.hpp>
 #include <gal/net/decl.hpp>
