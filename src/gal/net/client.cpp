@@ -11,6 +11,8 @@
 #include <unistd.h>          // For close()
 #include <netinet/in.h>      // For sockaddr_in
 
+#include <gal/net/except.hpp>
+
 #include <gal/net/client.hpp>
 
 //#include <galaxy/config.hpp>
@@ -42,11 +44,15 @@ void			THIS::connect(
 		S_IO io_service,
 		ip::tcp::resolver::iterator endpoint_iterator)
 {
+	printv_func(DEBUG);
+
 	do_connect(endpoint_iterator);
 }
 void			THIS::do_connect(
 		ip::tcp::resolver::iterator endpoint_iterator)
 {
+	printv_func(DEBUG);
+
 	auto ios = io_service_.lock();
 	assert(ios);
 
@@ -68,7 +74,7 @@ void			THIS::thread_after_connect(
 		boost::system::error_code ec,
 		ip::tcp::resolver::iterator)
 {
-	//printv_func(DEBUG);
+	printv_func(DEBUG);
 
 	auto ios = io_service_.lock();
 
@@ -76,7 +82,9 @@ void			THIS::thread_after_connect(
 
 	if (ec) {
 		printf("connect failed\n");
-		abort();
+		//gal::error::backtrace bt; bt.calc();
+		//throw gal::net::except::ConnectFailed(bt);
+		return;
 	}
 
 	printv(INFO, "gal::net::client connected\n");
@@ -85,12 +93,8 @@ void			THIS::thread_after_connect(
 	do_read_header();
 	// async
 	launch_write_thread();
-
 	// will wait for server desc
 	after_connect();
 }
-
-
-
 
 
