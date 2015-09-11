@@ -51,8 +51,8 @@ namespace gal { namespace net {
 			/// ctor
 			message();
 			virtual ~message();
-			virtual void			init_input(gal::managed_object *);
-			virtual void			init_output(gal::managed_object *);
+			virtual void			init_input(gal::mng::managed_object *);
+			virtual void			init_output(gal::mng::managed_object *);
 			//void				set(void const * const, unsigned int);
 			void				reset_head();
 			/*void				write(void const * const, size_t);

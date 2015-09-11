@@ -44,7 +44,7 @@ void		gal::net::message::read(void * const v, size_t len) {
 	
 	if(ss_.fail()) assert(0);
 	}*/
-void			THIS::init_input(gal::managed_object * shared_parent)
+void			THIS::init_input(gal::mng::managed_object * shared_parent)
 {
 	if(iar_) return;
 	
@@ -55,7 +55,7 @@ void			THIS::init_input(gal::managed_object * shared_parent)
 		reset_iarchive();
 		
 		//iar_->_M_shared_parent = shared_parent;
-		iar_->gal::managed_object::init(shared_parent->get_registry());
+		iar_->gal::mng::managed_object::init(shared_parent->get_registry());
 	} catch(boost::archive::archive_exception& e) {
 		printf("error: %s\n", e.what());
 
@@ -76,7 +76,7 @@ void			THIS::init_input(gal::managed_object * shared_parent)
 	}
 
 }
-void			THIS::init_output(gal::managed_object * shared_parent)
+void			THIS::init_output(gal::mng::managed_object * shared_parent)
 {
 	if(oar_) return;
 
@@ -86,7 +86,7 @@ void			THIS::init_output(gal::managed_object * shared_parent)
 	reset_oarchive();
 	
 	//oar_->_M_shared_parent = shared_parent;
-	oar_->gal::managed_object::init(shared_parent->get_registry());
+	oar_->gal::mng::managed_object::init(shared_parent->get_registry());
 }
 THIS::S_OA		THIS::get_oar()
 {
