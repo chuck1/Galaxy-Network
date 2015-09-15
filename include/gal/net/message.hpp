@@ -35,8 +35,8 @@ typedef gal::net::iarchive iarchive;
 namespace gal { namespace net {
 	/// message
 	class message:
-		public gal::verb::Verbosity<gal::net::message>,
-		public gal::enable_shared_from_this<message>
+		virtual public gal::verb::Verbosity<gal::net::message>,
+		virtual public gal::enable_shared_from_this<message>
 	{
 		public:
 			friend class gal::net::communicating;
