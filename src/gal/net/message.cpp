@@ -3,7 +3,8 @@
 #include <cstring>
 #include <assert.h>
 
-//#include <galaxy/config.hpp>
+#include <gal/stl/factory_map.hpp>
+
 #include <gal/net/message.hpp>
 
 typedef gal::net::message THIS;
@@ -50,22 +51,25 @@ void			THIS::init_input(gal::mng::managed_object * shared_parent)
 	
 	assert(shared_parent);
 
+	auto s = shared_parent->shared_from_this();
+
 	try {
 		//iar_ = new iarchive(ss_);
 		reset_iarchive();
 		
 		//iar_->_M_shared_parent = shared_parent;
 		iar_->gal::mng::managed_object::init(shared_parent->get_registry());
+
 	} catch(boost::archive::archive_exception& e) {
 		printf("error: %s\n", e.what());
 
-		std::string s = ss_.str();
-		printf("string length = %lu\n", s.length());
+		std::string st = ss_.str();
+		printf("string length = %lu\n", st.length());
 
-		unsigned char const * c = (unsigned char const *)s.c_str();
+		unsigned char const * c = (unsigned char const *)st.c_str();
 		
 		printf("data:\n");
-		for(unsigned int i = 0; i < s.length(); i++) {
+		for(unsigned int i = 0; i < st.length(); i++) {
 			printf("%02X ", c[i]);
 		}
 		printf("\n");
@@ -74,7 +78,6 @@ void			THIS::init_input(gal::mng::managed_object * shared_parent)
 
 		assert(0);
 	}
-
 }
 void			THIS::init_output(gal::mng::managed_object * shared_parent)
 {
@@ -82,11 +85,25 @@ void			THIS::init_output(gal::mng::managed_object * shared_parent)
 
 	assert(shared_parent);
 
+	auto s = shared_parent->shared_from_this();
+
 	//oar_ = new oarchive(ss_);
 	reset_oarchive();
 	
 	//oar_->_M_shared_parent = shared_parent;
 	oar_->gal::mng::managed_object::init(shared_parent->get_registry());
+}
+void			THIS::set_oar_factory_map(
+		std::shared_ptr<gal::stl::factory_map> fm)
+{
+	assert(fm);
+	oar_->_M_factory_map = fm;
+}
+void			THIS::set_iar_factory_map(
+		std::shared_ptr<gal::stl::factory_map> fm)
+{
+	assert(fm);
+	iar_->_M_factory_map = fm;
 }
 THIS::S_OA		THIS::get_oar()
 {

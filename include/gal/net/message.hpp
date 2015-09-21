@@ -53,6 +53,10 @@ namespace gal { namespace net {
 			virtual ~message();
 			virtual void			init_input(gal::mng::managed_object *);
 			virtual void			init_output(gal::mng::managed_object *);
+			void				set_iar_factory_map(
+					std::shared_ptr<gal::stl::factory_map> fm);
+			void				set_oar_factory_map(
+					std::shared_ptr<gal::stl::factory_map> fm);
 			//void				set(void const * const, unsigned int);
 			void				reset_head();
 			/*void				write(void const * const, size_t);
