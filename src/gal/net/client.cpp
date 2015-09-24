@@ -84,6 +84,10 @@ void			THIS::thread_after_connect(
 		printf("connect failed\n");
 		//gal::error::backtrace bt; bt.calc();
 		//throw gal::net::except::ConnectFailed(bt);
+		socket_->close();
+		//printf("is_open=%i\n", socket_->is_open());
+		//printf("&socket=%p\n", socket_.get());
+		assert(0);
 		return;
 	}
 

@@ -131,6 +131,7 @@ namespace gal { namespace net {
 		void			do_read_body();
 		void			thread_read_body(boost::system::error_code ec, size_t);
 		virtual void		reset_read_msg() = 0;	
+		virtual bool		is_open();
 	public:
 		W_IO					io_service_;
 	protected:
@@ -157,6 +158,7 @@ namespace gal { namespace net {
 		std::condition_variable			_M_cv_write;
 		std::mutex				_M_mutex_write_queue;
 		std::mutex				_M_mutex_write;
+		std::mutex				_M_mutex_write_thread_launch;
 	
 		gal::net::Barrier<2>			_M_barrier_write_thread_launch;
 	

@@ -20,6 +20,7 @@ namespace gal { namespace net {
 	{
 	public:
 		using gal::enable_shared_from_this<gal::net::client>::shared_from_this;
+
 		typedef std::shared_ptr<client>	shared_t;
 		typedef std::shared_ptr<boost::asio::io_service>	S_IO;
 		typedef std::weak_ptr<boost::asio::io_service>		W_IO;

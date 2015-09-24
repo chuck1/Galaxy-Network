@@ -78,9 +78,20 @@ void			THIS::launch()
 	printv_func(DEBUG);
 	auto self = shared_from_this();
 
+	std::lock_guard<std::mutex> lk(_M_mutex_write_thread_launch);
+
 	if(QUEUE_METHOD) {
-		std::thread t(boost::bind(&THIS::do_write, self));
-		t.detach();
+		
+		if(!_M_flag.any(THIS::Flag::E::WRITE_THREAD_LAUNCHED)) {
+			
+			_M_flag.set(THIS::Flag::E::WRITE_THREAD_LAUNCHED);
+
+			std::thread t(boost::bind(&THIS::do_write, self));
+			t.detach();
+			
+			_M_barrier_write_thread_launch.wait();
+		}
+
 	}
 }
 void			THIS::write(S_MSG msg)
@@ -90,11 +101,7 @@ void			THIS::write(S_MSG msg)
 	auto self = shared_from_this();
 
 	if(QUEUE_METHOD) {
-		if(!_M_flag.any(THIS::Flag::E::WRITE_THREAD_LAUNCHED)) {
-			_M_flag.set(THIS::Flag::E::WRITE_THREAD_LAUNCHED);
-			launch();
-			_M_barrier_write_thread_launch.wait();
-		}
+		launch();
 	}
 	
 	if(QUEUE_METHOD) { // cv method
@@ -144,7 +151,7 @@ void			THIS::launch_write_thread()
 		assert(ios);
 
 		auto self = shared_from_this();
-
+		assert(0);
 		ios->post(boost::bind(&THIS::do_write, self));
 	}
 }
@@ -205,7 +212,7 @@ void		gal::net::communicating::thread_write(S_MSG msg)
 void		gal::net::communicating::do_write(/*S_MSG msg*/)
 {
 	printv_func(DEBUG);
-
+	
 	auto self = shared_from_this();
 
 	std::unique_lock<std::mutex> lk(_M_mutex_write_queue);
@@ -304,15 +311,16 @@ void			gal::net::communicating::thread_do_write_body(
 {
 	printv_func(DEBUG);
 
+	printv(DEBUG, "write successful\n");
+	_M_mutex_write.unlock();
+	printv(DEBUG, "write mutex unlocked\n");
+
 	if(ec) {
 		printv(CRITICAL, "error: %s\n", ec.message().c_str());
 		socket_->close();
 		abort();
 	}
 
-	printv(DEBUG, "write successful\n");
-	_M_mutex_write.unlock();
-	printv(DEBUG, "write mutex unlocked\n");
 
 	//do_write();
 	/*
@@ -472,6 +480,14 @@ void			THIS::thread_read_body(
 	// restart read process
 	do_read_header();
 }
-
+bool			THIS::is_open()
+{
+	assert(socket_);
+	if(!socket_) return false;
+	bool ret = socket_->is_open();
+	printv(INFO, "is_open=%i\n", ret);
+	printv(INFO, "&socket=%p\n", socket_.get());
+	return ret;
+}
 
 
