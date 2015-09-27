@@ -287,7 +287,17 @@ void			gal::net::communicating::thread_do_write_header(
 
 	if(ec) {
 		printf("thread_do_write_header error: %s\n", ec.message().c_str());
-		abort();
+
+		if(
+				(ec.value() == boost::asio::error::eof) ||
+				(ec.value() == boost::asio::error::bad_descriptor) ||
+				(ec.value() == boost::asio::error::connection_reset)) {
+			printv(ERROR, "closing connection\n");
+			close();
+			return;
+		}
+
+		assert(0);
 	}
 
 	std::string str(msg->ss_.str());
@@ -346,7 +356,7 @@ void			THIS::close()
 		auto io = io_service_.lock();
 		io->post([this]() {
 				socket_->close();
-				socket_.reset();
+				//socket_.reset();
 				});
 	}
 }
